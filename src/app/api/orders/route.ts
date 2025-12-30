@@ -5,9 +5,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { adminDB, adminStorage } from "@/lib/firebaseAdmins";
+import { adminDB } from "@/lib/firebaseAdmins";
+import cloudinary from "@/lib/cloudinary";
 
-// Ensure Node.js runtime for Admin SDK.
+// Ensure Node.js runtime for Admin SDK and Cloudinary.
 export const runtime = "nodejs";
 
 interface Sizes {
@@ -152,56 +153,40 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 2. Upload image to Cloud Storage with a unique filename
+  // 2. Upload image to Cloudinary with a unique filename
   let imageUrl: string;
   try {
-    // Explicitly use the bucket name from environment variable
-    const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
-    if (!bucketName) {
-      throw new Error("FIREBASE_STORAGE_BUCKET environment variable is not set.");
-    }
-    
-    const bucket = adminStorage.bucket(bucketName);
-    
-    // Check if bucket exists and is accessible
-    const [exists] = await bucket.exists();
-    if (!exists) {
-      throw new Error(
-        `Storage bucket "${bucketName}" does not exist. Please create it in Firebase Console (Storage section) or verify the bucket name is correct. Expected format: "your-project-id.appspot.com"`
-      );
-    }
-    
     const safeOriginalName = imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const uniqueName = `${Date.now()}-${randomUUID()}-${safeOriginalName}`;
-    const filePath = `products/${uniqueName}`;
-    const file = bucket.file(filePath);
 
     const arrayBuffer = await imageFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    await file.save(buffer, {
-      contentType: imageFile.type || "application/octet-stream",
-      resumable: false,
+    const uploadResult = await new Promise<any>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "products",
+          public_id: uniqueName,
+          resource_type: "image",
+        },
+        (error, result) => {
+          if (error || !result) return reject(error);
+          resolve(result);
+        }
+      );
+
+      stream.end(buffer);
     });
 
-    // Public URL (assuming you configure access appropriately)
-    imageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+    imageUrl = uploadResult.secure_url;
   } catch (error) {
-    console.error("Cloud Storage upload failed in POST /api/products", error);
+    console.error("Cloudinary upload failed in POST /api/products", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    
-    // Provide more helpful error messages
-    let userFriendlyError = "Failed to upload product image.";
-    if (errorMessage.includes("does not exist")) {
-      userFriendlyError = errorMessage;
-    } else if (errorMessage.includes("FIREBASE_STORAGE_BUCKET")) {
-      userFriendlyError = errorMessage;
-    }
-    
+
     return NextResponse.json(
-      { 
-        error: userFriendlyError,
-        details: errorMessage 
+      {
+        error: "Failed to upload product image.",
+        details: errorMessage,
       },
       { status: 500 }
     );
