@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { formatMoney } from "../utils/money";
-import { products, Product } from "../utils/products";
+import { formatMoney } from "../../utils/money";
 import Link from "next/link";
 import { useState } from "react";
+import { ProductsCardsprops, Product } from "@/app/page";
 
-const ProductCard = () => {
+const ProductCard = ({ products }: ProductsCardsprops) => {
   const [productItems, setProductItems] = useState(
     products.map((product) => ({
       ...product,
@@ -33,7 +33,7 @@ const ProductCard = () => {
     <>
       {productItems.map((product: Product) => (
         <div
-          className="bg-[#f0f0f0] max-w-80 rounded-md m-2 shadow-lg relative"
+          className="bg-[#f0f0f0] max-w-80 rounded-md m-2 shadow-lg relative  max-[446px]:max-w-75 "
           key={product.slug}
         >
           <Link
@@ -63,8 +63,7 @@ const ProductCard = () => {
             <div className="font-bold text-xl mb-2 mt-2">
               {formatMoney({
                 // Total price = base price * quantity
-                priceCents:
-                  product.priceCents * product.quantity,
+                priceCents: product.priceCents * product.quantity,
               })}
             </div>
 

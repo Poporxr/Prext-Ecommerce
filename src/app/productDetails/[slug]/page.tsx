@@ -1,104 +1,73 @@
-"use client";
+import { cache } from "react";
+import { adminDB } from "@/lib/firebaseAdmins";
+import { notFound } from "next/navigation";
+import ProductDetailsClient from "./ProductDetailsClient";
 
-import { products } from "../../../../utils/products";
-import Image from "next/image";
-import { formatMoney } from "../../../../utils/money";
-import { useState } from "react";
+// Keep this in sync with the ProductDoc interface used in the /api/products route.
+interface SizesShape {
+  small: "S";
+  medium: "M";
+  large: "L";
+  xl: "XL";
+  xxl: "XXL";
+  defaultSize: "S" | "M" | "L" | "XL" | "XXL";
+}
 
-const sizes = ["S", "M", "L", "XL", "XXL"];
+export interface Product {
+  firestoreId?: string;
+  id: number;
+  image: string;
+  name: string;
+  slug: string;
+  description: string;
+  sizes: SizesShape;
+  priceCents: number;
+  quantity: number;
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+}
 
-const ProductDetails = (/*{ params }*/) => {
-  // const {slug} = params;
+const getProductBySlug = cache(
+  async (slug: string): Promise<Product | null> => {
+    const cleanSlug = (slug ?? "").trim();
+    if (!cleanSlug) {
+      return null;
+    }
 
-  const [productItems, setProductItems] = useState(
-    products.map((product) => ({
-      ...product,
-      quantity: 1, // each item gets its own quantity
-    }))
-  );
+    const snapshot = await adminDB
+      .collection("products")
+      .where("slug", "==", cleanSlug)
+      .limit(1)
+      .get();
 
+    if (snapshot.empty) return null;
 
-  const increment = (id: number) =>
-    setProductItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
-  const decrement = (id: number) =>
-    setProductItems((prev) =>
-      prev.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
-          : item
-      )
-    );
+    const docSnap = snapshot.docs[0];
+    const data = docSnap.data() as Product;
 
+    // Attach Firestore document id as firestoreId, preserving all other fields.
+    return { ...data, firestoreId: docSnap.id };
+  }
+);
 
-  return (
-    <div className="mt-30">
-      <div className="flex p-6 gap-10 max-[446px]:flex-col max-[446px]:ml-2 ">
-        <div className="relative w-[40%] h-[470px] max-[446px]:w-[92%] max-[446px]:h-[350px]">
-          <Image
-            alt="maA"
-            className="w-full rounded-md object-center"
-            fill
-            src={productItems[2].image}
-          />
-        </div>
-        <div className="max-w-[45%] flex flex-col gap-5 max-[446px]:max-w-[92%]">
-          <h2 className="text-2xl font-semibold">{productItems[5].name}</h2>
+interface PageProps {
+  // In Next.js 16 with the App Router, `params` may be a Promise.
+  params: Promise<{ slug: string }> | { slug: string };
+}
 
-          <p className="text-l ">{productItems[6].description}</p>
+export default async function ProductDetails({ params }: PageProps) {
+  const resolvedParams = params instanceof Promise ? await params : params;
+  const slug = (resolvedParams?.slug ?? "").trim();
+  if (!slug) {
+    notFound();
+  }
 
-          <div className="max-[446px]:flex flex">
-            {sizes.map((size) => (
-              <button
-                key={size}
-                className="border w-12 h-12 m-1 p-3 rounded-full cursor-pointer max-[446px]:w-10 max-[446px]:h-10 flex items-center justify-center"
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-10 mt-5">
-            <span className="font-bold text-xl">
-              {formatMoney({
-                // Total price = base price * quantity
-                priceCents:
-                  productItems[9].priceCents * productItems[4].quantity,
-              })}
-            </span>
-            <div className="flex gap-3">
-              <Image
-                className="cursor-pointer"
-                alt="minus"
-                width={15}
-                height={20}
-                src={"/icons/Minus.svg"}
-                onClick={() => decrement(productItems[4].id)}
-              />
+  const product = await getProductBySlug(slug);
 
-              <span className="px-3 py-1 rounded-sm bg-[#d9d9d9]">
-                {productItems[4].quantity}
-              </span>
+  if (!product) {
+    notFound();
+  }
 
-              <Image
-                alt="plus"
-                className="cursor-pointer"
-                width={15}
-                height={20}
-                src={"/icons/Plus.svg"}
-                onClick={() => increment(productItems[4].id)}
-              />
-            </div>
-          </div>
-          <button className="bg-black text-white px-6 py-3 rounded-md ml-6 mt-4 cursor-pointer hover:bg-gray-800 w-1/2 max-[446px]:w-full">
-            Add to Cart
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default ProductDetails;
+  return <ProductDetailsClient product={product} />;
+}

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import {  Roboto_Serif, Geist_Mono } from "next/font/google";
+import { Roboto_Serif, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import NavBar from "../../components/NavBar";
+import NavBar from "../components/NavBar";
 
 const Sans = Roboto_Serif({
   variable: "--font-roboto-serif",
@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Prext | Ecommerce",
-  description: "Shop quality products at unbeatable prices. Discover electronics, fashion, home essentials, and more with fast delivery, secure payments, and excellent customer support. Your one-stop online store for all your needs.",
+  description:
+    "Shop quality products at unbeatable prices. Discover electronics, fashion, home essentials, and more with fast delivery, secure payments, and excellent customer support. Your one-stop online store for all your needs.",
 };
 
 export default function RootLayout({

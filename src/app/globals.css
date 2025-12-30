@@ -11,7 +11,7 @@
   @apply fixed flex top-0 w-full z-50 flex-row justify-between items-center px-4 py-2 bg-transparent
 }
 .cart-btn{
-  @apply mt-2 w-[40%] cursor-pointer bg-[rgb(25,135,84)] text-white py-2 rounded-md hover:bg-[rgb(22,101,64)] transition-colors
+  @apply mt-2 w-[40%] cursor-pointer bg-black text-white py-2 rounded-md hover:bg-[#333] transition-colors
 }
 select {
   @apply 
