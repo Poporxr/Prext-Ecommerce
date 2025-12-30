@@ -18,6 +18,10 @@ if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
   throw new Error("Missing Firebase Admin environment variables.");
 }
 
+if (!FIREBASE_STORAGE_BUCKET) {
+  throw new Error("FIREBASE_STORAGE_BUCKET environment variable is required.");
+}
+
 const adminApp =
   getApps().length > 0
     ? getApp()

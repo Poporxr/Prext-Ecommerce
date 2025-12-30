@@ -1,16 +1,13 @@
 // src/app/api/products/route.ts
-// Firestore + Firebase Storage handlers for `/api/products`.
+// Firestore + Cloud Storage handlers for `/api/products` using Firebase Admin SDK.
 // - GET    /api/products      -> list all products
 // - POST   /api/products      -> create a new product with image upload
 
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { collection, getDocs, addDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { app, connectDB } from "../../../lib/firebase";
+import { adminDB, adminStorage } from "@/lib/firebaseAdmins";
 
-// Ensure this route runs in the Node.js runtime so we can use
-// the Firebase client SDKs and Node's crypto APIs.
+// Ensure this route runs in the Node.js runtime so we can use the Admin SDK.
 export const runtime = "nodejs";
 
 // Sizes structure we want on every product, matching your existing data.
@@ -41,13 +38,12 @@ interface ProductDoc {
 }
 
 // GET /api/products
-// Returns all products from the Firestore `products` collection.
+// Returns all products from the Firestore `products` collection using Admin SDK.
 // We expose both the numeric `id` (stored in the document) and the
 // Firestore document id as `firestoreId`.
 export async function GET(_request: NextRequest) {
   try {
-    const colRef = collection(connectDB, "products");
-    const snapshot = await getDocs(colRef);
+    const snapshot = await adminDB.collection("products").get();
 
     const products = snapshot.docs.map((docSnap) => {
       const data = docSnap.data() as ProductDoc;
@@ -167,51 +163,67 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 2. Upload image to Firebase Storage with a unique filename
+  // 2. Upload image to Cloud Storage with a unique filename (Admin SDK)
   let imageUrl: string;
 
   try {
-    const storage = getStorage(app);
+    // Explicitly use the bucket name from environment variable
+    const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
+    if (!bucketName) {
+      throw new Error(
+        "FIREBASE_STORAGE_BUCKET environment variable is not set."
+      );
+    }
+
+    const bucket = adminStorage.bucket(bucketName);
+
+    // Check if bucket exists and is accessible
+    const [exists] = await bucket.exists();
+    if (!exists) {
+      throw new Error(
+        `Storage bucket "${bucketName}" does not exist. Please create it in Firebase Console (Storage section) or verify the bucket name is correct. Expected format: "your-project-id.appspot.com"`
+      );
+    }
 
     const safeOriginalName = imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const uniqueName = `${Date.now()}-${randomUUID()}-${safeOriginalName}`;
     const filePath = `products/${uniqueName}`;
-
-    const storageRef = ref(storage, filePath);
+    const file = bucket.file(filePath);
 
     const arrayBuffer = await imageFile.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
+    const buffer = Buffer.from(arrayBuffer);
 
-    const uploadResult = await uploadBytes(storageRef, uint8Array, {
+    await file.save(buffer, {
       contentType: imageFile.type || "application/octet-stream",
+      resumable: false,
     });
 
-    imageUrl = await getDownloadURL(uploadResult.ref);
+    // Public URL (assuming you configure access appropriately)
+    imageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
   } catch (error) {
-    console.error(
-      "Firebase Storage upload failed in POST /api/products",
-      error
-    );
+    console.error("Cloud Storage upload failed in POST /api/products", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
-    // Surface the error message to help with debugging why the
-    // upload is failing (e.g. misconfigured storageBucket, auth, etc.).
-    const message =
-      error instanceof Error
-        ? error.message
-        : typeof error === "string"
-          ? error
-          : "Unknown storage error";
+    // Provide more helpful error messages
+    let userFriendlyError = "Failed to upload product image.";
+    if (errorMessage.includes("does not exist")) {
+      userFriendlyError = errorMessage;
+    } else if (errorMessage.includes("FIREBASE_STORAGE_BUCKET")) {
+      userFriendlyError = errorMessage;
+    }
 
     return NextResponse.json(
-      { error: "Failed to upload product image.", details: message },
+      {
+        error: userFriendlyError,
+        details: errorMessage,
+      },
       { status: 500 }
     );
   }
 
-  // 3. Build the product document and save it to Firestore
+  // 3. Build the product document and save it to Firestore (Admin SDK)
   try {
-    const colRef = collection(connectDB, "products");
-
     const now = new Date().toISOString();
 
     const sizes: Sizes = {
@@ -238,7 +250,7 @@ export async function POST(request: NextRequest) {
       updatedAt: now,
     };
 
-    const docRef = await addDoc(colRef, data);
+    const docRef = await adminDB.collection("products").add(data);
 
     return NextResponse.json(
       {

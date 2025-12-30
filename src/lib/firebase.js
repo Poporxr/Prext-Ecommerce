@@ -12,7 +12,9 @@ const firebaseConfig = {
   apiKey: "AIzaSyBUj0gQs0rojY_W1MkJc8jqVHqyGLCWjR0",
   authDomain: "prext-ecommerce.firebaseapp.com",
   projectId: "prext-ecommerce",
-  storageBucket: "prext-ecommerce.firebasestorage.app",
+  // Use the default Storage bucket for this Firebase project.
+  // You can confirm this value in the Firebase Console under Storage.
+  storageBucket: "prext-ecommerce.appspot.com",
   messagingSenderId: "286272977916",
   appId: "1:286272977916:web:ab1df5b59bffe6e8f55079",
   measurementId: "G-B7FRQM0E7Z",

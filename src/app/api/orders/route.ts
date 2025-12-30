@@ -1,204 +1,253 @@
-// src/app/api/orders/route.ts
-// Firestore-backed collection handlers for `/api/orders`.
-// - GET    /api/orders      -> list all orders
-// - POST   /api/orders      -> create a new order
+// src/app/api/products/route.ts
+// Firestore + Cloud Storage handlers for `/api/products`.
+// - GET    /api/products      -> list all products
+// - POST   /api/products      -> create a new product with image upload
 
 import { NextRequest, NextResponse } from "next/server";
-import { collection, getDocs, addDoc, doc, getDoc } from "firebase/firestore";
-import { connectDB } from "../../../lib/firebase";
+import { randomUUID } from "crypto";
+import { adminDB, adminStorage } from "@/lib/firebaseAdmins";
 
-interface OrderItem {
-  productId: string; // Firestore document ID for the product
-  title: string; // Snapshot of product title at time of purchase
-  qty: number; // Quantity purchased
-  price: number; // Price per unit (same unit as `amount`)
+// Ensure Node.js runtime for Admin SDK.
+export const runtime = "nodejs";
+
+interface Sizes {
+  small: "S";
+  medium: "M";
+  large: "L";
+  xl: "XL";
+  xxl: "XXL";
+  defaultSize: "S" | "M" | "L" | "XL" | "XXL";
 }
 
-interface OrderDoc {
-  // Auto-generated Firestore document ID is returned as `id` in responses.
-  customerEmail: string;
-  amount: number; // Total order amount (derived from items)
-  status: "pending" | "successful" | "shipped";
-  paystackReference: string;
-  items: OrderItem[];
-  createdAt: string; // ISO timestamp string
-  updatedAt: string; // ISO timestamp string
+// Firestore product document shape (matches your example + timestamps).
+interface ProductDoc {
+  id: number; // numeric product id (separate from Firestore doc id)
+  image: string; // image URL from Storage
+  name: string;
+  slug: string;
+  description: string;
+  sizes: Sizes;
+  priceCents: number;
+  quantity: number;
+  createdAt: string;
+  updatedAt: string;
   [key: string]: unknown;
 }
 
-// GET /api/orders
-// Returns all orders from the Firestore `orders` collection.
+// GET /api/products
 export async function GET(_request: NextRequest) {
   try {
-    const colRef = collection(connectDB, "orders");
-    const snapshot = await getDocs(colRef);
+    const snapshot = await adminDB.collection("products").get();
 
-    const orders = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...(docSnap.data() as OrderDoc),
-    }));
+    const products = snapshot.docs.map((docSnap) => {
+      const data = docSnap.data() as ProductDoc;
+      return {
+        firestoreId: docSnap.id,
+        ...data,
+      };
+    });
 
-    return NextResponse.json(orders, { status: 200 });
+    return NextResponse.json(products, { status: 200 });
   } catch (error) {
-    console.error("GET /api/orders error", error);
+    console.error("GET /api/products error", error);
     return NextResponse.json(
-      { error: "Failed to fetch orders" },
+      { error: "Failed to fetch products" },
       { status: 500 }
     );
   }
 }
 
-interface CreateOrderBody {
-  customerEmail: string;
-  paystackReference: string;
-  items: { productId: string; qty: number }[];
-  status?: "pending" | "successful" | "shipped";
-  // Optional metadata bag for future fields (e.g. shipping info).
-  [key: string]: unknown;
-}
-
-// POST /api/orders
-// Creates a new order document in Firestore.
+// POST /api/products
+// Expects multipart/form-data:
+// - name: string
+// - description: string
+// - priceCents OR price: number
+// - slug: optional string (auto-generated if missing)
+// - image: File
 export async function POST(request: NextRequest) {
+  // 1. Parse and validate form data
+  let name: string;
+  let description: string;
+  let slug: string;
+  let priceCents: number;
+  let imageFile: File;
+
   try {
-    const body = (await request.json()) as Partial<CreateOrderBody> | null;
+    const formData = await request.formData();
 
-    if (!body || typeof body !== "object") {
+    const rawName = formData.get("name");
+    const rawDescription = formData.get("description");
+    const rawSlug = formData.get("slug");
+    const rawPrice = formData.get("priceCents") ?? formData.get("price");
+    const rawImage = formData.get("image");
+
+    // name
+    if (typeof rawName !== "string" || !rawName.trim()) {
       return NextResponse.json(
-        { error: "Invalid request body" },
+        { error: "Field 'name' is required and must be a non-empty string." },
         { status: 400 }
       );
     }
+    name = rawName.trim();
 
-    const { customerEmail, paystackReference, items, status, ...rest } =
-      body as CreateOrderBody;
-
-    if (!customerEmail || typeof customerEmail !== "string") {
+    // description
+    if (typeof rawDescription !== "string" || !rawDescription.trim()) {
       return NextResponse.json(
-        { error: "'customerEmail' is required and must be a string" },
+        {
+          error:
+            "Field 'description' is required and must be a non-empty string.",
+        },
         { status: 400 }
       );
     }
+    description = rawDescription.trim();
 
-    if (!paystackReference || typeof paystackReference !== "string") {
+    // price
+    if (rawPrice === null) {
       return NextResponse.json(
-        { error: "'paystackReference' is required and must be a string" },
+        {
+          error:
+            "Either 'priceCents' or 'price' is required and must be a positive number.",
+        },
         { status: 400 }
       );
     }
-
-    // Validate items array.
-    if (!Array.isArray(items) || items.length === 0) {
+    const parsedPrice = Number(rawPrice);
+    if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
       return NextResponse.json(
-        { error: "Invalid request body: 'items' must be a non-empty array" },
+        { error: "'priceCents' / 'price' must be a positive number." },
         { status: 400 }
       );
     }
+    priceCents = parsedPrice;
 
-    for (const item of items) {
-      if (
-        !item ||
-        typeof item.productId !== "string" ||
-        typeof item.qty !== "number" ||
-        item.qty <= 0
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "Each item must include a valid 'productId' (string) and 'qty' (positive number)",
-          },
-          { status: 400 }
-        );
-      }
+    // slug (optional)
+    if (typeof rawSlug === "string" && rawSlug.trim()) {
+      slug = rawSlug.trim();
+    } else {
+      const base = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      const suffix = randomUUID().slice(0, 8);
+      slug = `${base}-${suffix}`;
     }
 
-    // Ensure all referenced products exist and compute total amount.
-    const orderItems: OrderItem[] = [];
-    let amount = 0;
-
-    for (const item of items) {
-      const productRef = doc(connectDB, "products", item.productId);
-      const productSnap = await getDoc(productRef);
-
-      if (!productSnap.exists()) {
-        return NextResponse.json(
-          { error: `Product not found for productId ${item.productId}` },
-          { status: 400 }
-        );
-      }
-
-      const productData = productSnap.data() as {
-        name?: string;
-        priceCents?: number;
-      };
-
-      if (typeof productData.priceCents !== "number") {
-        return NextResponse.json(
-          { error: `Product ${item.productId} is missing 'priceCents'` },
-          { status: 500 }
-        );
-      }
-
-      const title =
-        typeof productData.name === "string"
-          ? productData.name
-          : item.productId;
-      const price = productData.priceCents;
-
-      const snapshotItem: OrderItem = {
-        productId: item.productId,
-        title,
-        qty: item.qty,
-        price,
-      };
-
-      orderItems.push(snapshotItem);
-      amount += price * item.qty;
+    // image
+    if (!(rawImage instanceof File)) {
+      return NextResponse.json(
+        { error: "Field 'image' is required and must be a file." },
+        { status: 400 }
+      );
     }
+    imageFile = rawImage;
+  } catch (error) {
+    console.error("Failed to parse form data in POST /api/products", error);
+    return NextResponse.json(
+      {
+        error:
+          "Invalid form data. Ensure you are sending multipart/form-data with name, description, price, and image.",
+      },
+      { status: 400 }
+    );
+  }
 
-    // Validate and normalize status.
-    const validStatuses: OrderDoc["status"][] = [
-      "pending",
-      "successful",
-      "shipped",
-    ];
+  // 2. Upload image to Cloud Storage with a unique filename
+  let imageUrl: string;
+  try {
+    // Explicitly use the bucket name from environment variable
+    const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
+    if (!bucketName) {
+      throw new Error("FIREBASE_STORAGE_BUCKET environment variable is not set.");
+    }
+    
+    const bucket = adminStorage.bucket(bucketName);
+    
+    // Check if bucket exists and is accessible
+    const [exists] = await bucket.exists();
+    if (!exists) {
+      throw new Error(
+        `Storage bucket "${bucketName}" does not exist. Please create it in Firebase Console (Storage section) or verify the bucket name is correct. Expected format: "your-project-id.appspot.com"`
+      );
+    }
+    
+    const safeOriginalName = imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const uniqueName = `${Date.now()}-${randomUUID()}-${safeOriginalName}`;
+    const filePath = `products/${uniqueName}`;
+    const file = bucket.file(filePath);
 
-    const resolvedStatus: OrderDoc["status"] = validStatuses.includes(
-      status as OrderDoc["status"]
-    )
-      ? (status as OrderDoc["status"])
-      : "pending";
+    const arrayBuffer = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
+    await file.save(buffer, {
+      contentType: imageFile.type || "application/octet-stream",
+      resumable: false,
+    });
+
+    // Public URL (assuming you configure access appropriately)
+    imageUrl = `https://storage.googleapis.com/${bucket.name}/${filePath}`;
+  } catch (error) {
+    console.error("Cloud Storage upload failed in POST /api/products", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    // Provide more helpful error messages
+    let userFriendlyError = "Failed to upload product image.";
+    if (errorMessage.includes("does not exist")) {
+      userFriendlyError = errorMessage;
+    } else if (errorMessage.includes("FIREBASE_STORAGE_BUCKET")) {
+      userFriendlyError = errorMessage;
+    }
+    
+    return NextResponse.json(
+      { 
+        error: userFriendlyError,
+        details: errorMessage 
+      },
+      { status: 500 }
+    );
+  }
+
+  // 3. Save product document in Firestore
+  try {
     const now = new Date().toISOString();
 
-    const data: OrderDoc = {
-      customerEmail,
-      paystackReference,
-      items: orderItems,
-      amount,
-      status: resolvedStatus,
-      ...(rest as Omit<
-        OrderDoc,
-        | "customerEmail"
-        | "paystackReference"
-        | "items"
-        | "amount"
-        | "status"
-        | "createdAt"
-        | "updatedAt"
-      >),
+    const sizes: Sizes = {
+      small: "S",
+      medium: "M",
+      large: "L",
+      xl: "XL",
+      xxl: "XXL",
+      defaultSize: "M",
+    };
+
+    const numericId = Date.now(); // simple numeric id like your example
+
+    const data: ProductDoc = {
+      id: numericId,
+      image: imageUrl,
+      name,
+      slug,
+      description,
+      sizes,
+      priceCents,
+      quantity: 1,
       createdAt: now,
       updatedAt: now,
     };
 
-    const colRef = collection(connectDB, "orders");
-    const docRef = await addDoc(colRef, data);
+    const docRef = await adminDB.collection("products").add(data);
 
-    return NextResponse.json({ id: docRef.id, ...data }, { status: 201 });
-  } catch (error) {
-    console.error("POST /api/orders error", error);
     return NextResponse.json(
-      { error: "Failed to create order" },
+      {
+        firestoreId: docRef.id,
+        ...data,
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Firestore write failed in POST /api/products", error);
+    return NextResponse.json(
+      { error: "Failed to create product" },
       { status: 500 }
     );
   }
