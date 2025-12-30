@@ -20,7 +20,7 @@ const NavBar = () => {
         <Link className="nav-links flex gap-1" href={'/cart'}>
           <Image src="/Icons/cart-icon.svg" alt="Cart" width={20} height={20} />
           Cart</Link>
-        <Link className="nav-links flex gap-1" href={'/cart'}>
+        <Link className="nav-links flex gap-1" href={'/profile'}>
           <Image src="/Icons/user-profile.svg" alt="Cart" width={20} height={20} />
           Profile</Link>
       </div>

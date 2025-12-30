@@ -31,4 +31,8 @@ select {
   @apply
   transition-transform duration-300 ease-out cursor-pointer group-hover:scale-110
 }
+.product-details{
+  @apply
+ absolute p-2 z-10 bg-[#ffffffcc] rounded-lg top-2 right-2 hover:scale-110 transition-transform duration-300 ease-out cursor-pointer
+}
 }
