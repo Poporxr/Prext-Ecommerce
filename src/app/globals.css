@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-.nav-links{
+@layer utilities {
+  .nav-links{
   @apply px-4 py-1.5 bg-[#f0f0f0]
   hover:bg-[#e0e0e0]
   rounded-2xl
@@ -8,4 +9,26 @@
 
 .nav-bar{
   @apply fixed flex top-0 w-full z-50 flex-row justify-between items-center px-4 py-2 bg-transparent
+}
+.cart-btn{
+  @apply mt-2 w-[40%] cursor-pointer bg-[rgb(25,135,84)] text-white py-2 rounded-md hover:bg-[rgb(22,101,64)] transition-colors
+}
+select {
+  @apply 
+  shadow-sm
+  border-gray-300
+  focus:border-green-500
+  focus:ring-green-500
+  rounded-md
+  py-0.5
+  px-1
+  mt-2 mb-2
+}
+.product-image{
+  @apply rounded-t-md w-full object-cover h-full transition-transform duration-300 ease-out cursor-pointer group-hover:scale-110
+}
+.transition{
+  @apply
+  transition-transform duration-300 ease-out cursor-pointer group-hover:scale-110
+}
 }
