@@ -24,7 +24,7 @@ const ProductCard = () => {
     setProductItems((prev) =>
       prev.map((item) =>
         item.id === id
-          ? { ...item, quantity: Math.max(0, item.quantity - 1) }
+          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
           : item
       )
     );
@@ -61,13 +61,18 @@ const ProductCard = () => {
               {product.name}
             </div>
             <div className="font-bold text-xl mb-2 mt-2">
-              {formatMoney({ priceCents: product.priceCents })}
+              {formatMoney({
+                // Total price = base price * quantity
+                priceCents:
+                  product.priceCents * product.quantity,
+              })}
             </div>
 
             <div className="flex items-center justify-between mt-4">
               <div className="flex gap-3">
                 <Image
                   alt="minus"
+                  className="cursor-pointer"
                   width={15}
                   height={20}
                   src={"/icons/Minus.svg"}

@@ -28,7 +28,7 @@ const ProductDetails = (/*{ params }*/) => {
     setProductItems((prev) =>
       prev.map((item) =>
         item.id === id
-          ? { ...item, quantity: Math.max(0, item.quantity - 1) }
+          ? { ...item, quantity: Math.max(1, item.quantity - 1) }
           : item
       )
     );
@@ -50,7 +50,7 @@ const ProductDetails = (/*{ params }*/) => {
 
           <p className="text-l ">{productItems[6].description}</p>
 
-          <div className="max-[446px]:flex">
+          <div className="max-[446px]:flex flex">
             {sizes.map((size) => (
               <button
                 key={size}
@@ -62,10 +62,15 @@ const ProductDetails = (/*{ params }*/) => {
           </div>
           <div className="flex gap-10 mt-5">
             <span className="font-bold text-xl">
-              {formatMoney({ priceCents: productItems[9].priceCents })}
+              {formatMoney({
+                // Total price = base price * quantity
+                priceCents:
+                  productItems[9].priceCents * productItems[4].quantity,
+              })}
             </span>
             <div className="flex gap-3">
               <Image
+                className="cursor-pointer"
                 alt="minus"
                 width={15}
                 height={20}
@@ -87,6 +92,9 @@ const ProductDetails = (/*{ params }*/) => {
               />
             </div>
           </div>
+          <button className="bg-black text-white px-6 py-3 rounded-md ml-6 mt-4 cursor-pointer hover:bg-gray-800 w-1/2 max-[446px]:w-full">
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
