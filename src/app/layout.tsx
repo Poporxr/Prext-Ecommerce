@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import NavBar from "../components/NavBar";
-
-// app/layout.tsx
 import { Providers } from "./providers";
 
 const playfair = Playfair_Display({

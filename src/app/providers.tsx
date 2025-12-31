@@ -1,20 +1,7 @@
-// app/providers.tsx
+"use client";
 
-import { HeroUIProvider } from "@heroui/react";
-import { ToastProvider } from "@heroui/toast";
-import {ReactNode} from "react"
+import { ToastProvider } from "../components/ToastProvider";
 
-
-interface ProvidersProps {
-  children: ReactNode;
-}
-
-
-export function Providers({ children }: ProvidersProps) {
-  return (
-    <HeroUIProvider>
-      <ToastProvider />
-      {children}
-    </HeroUIProvider>
-  );
+export function Providers({ children }: { children: React.ReactNode }) {
+  return <ToastProvider>{children}</ToastProvider>;
 }

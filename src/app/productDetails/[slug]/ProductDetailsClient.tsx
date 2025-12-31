@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { formatMoney } from "../../../../utils/money";
 import type { Product } from "./page";
-import { addToast } from "@heroui/toast";
+import { showToast } from "../../../components/Toast";
 
 const sizes = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -45,16 +45,8 @@ export default function ProductDetailsClient({ product }: Props) {
         throw new Error(data.error || "Failed to add item to cart");
       }
 
-      // Success - could show a toast notification here
-      addToast({
-        title: "Added To Cart",
-        description: "successfull",
-        color: "success",
-      });
-
-      
-      // Optionally refresh the page or redirect
-      // router.refresh();
+      // Success - show toast notification
+      showToast("Added to cart successfully!");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to add item to cart";

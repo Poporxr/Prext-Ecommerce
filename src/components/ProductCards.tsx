@@ -5,6 +5,7 @@ import { formatMoney } from "../../utils/money";
 import Link from "next/link";
 import { useState } from "react";
 import { ProductsCardsprops, Product } from "@/app/page";
+import { showToast } from "./Toast";
 
 const ProductCard = ({ products }: ProductsCardsprops) => {
   const [productItems, setProductItems] = useState(
@@ -13,7 +14,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
       quantity: 1, // each item gets its own quantity
     }))
   );
-  
+
   const [addingItems, setAddingItems] = useState<Record<number, boolean>>({});
   const [errors, setErrors] = useState<Record<number, string | null>>({});
 
@@ -59,8 +60,8 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
         throw new Error(data.error || "Failed to add item to cart");
       }
 
-      // Success - could show a toast notification here
-      alert("Item added to cart!");
+      // Success - show toast notification
+      showToast("Added to cart successfully!");
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to add item to cart";
@@ -147,7 +148,8 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
               <button
                 onClick={() => addToCart(product)}
                 disabled={addingItems[product.id]}
-                className="rounded-full bg-[#070e1a] px-4 py-2 text-sm font-medium text-white hover:bg-[#070e1a]/90 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                className="rounded-full bg-[#070e1a] px-4 py-2 text-sm font-medium text-white hover:bg-[#070e1a]/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {addingItems[product.id] ? "Adding..." : "Add to Cart"}
               </button>
             </div>
