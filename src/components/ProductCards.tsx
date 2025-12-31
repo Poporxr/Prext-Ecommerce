@@ -33,65 +33,87 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
     <>
       {productItems.map((product: Product) => (
         <div
-          className="bg-[#f0f0f0] max-w-80 rounded-md m-2 shadow-lg relative  max-[446px]:max-w-75 "
           key={product.slug}
+          className="
+        group relative max-w-80 m-2 overflow-hidden rounded-2xl
+        bg-white shadow-sm hover:shadow-lg transition-shadow duration-300
+        max-[446px]:max-w-[97%]
+      "
         >
+          {/* View details icon (hidden until hover) */}
           <Link
             href={`/productDetails/${product.slug}`}
-            className="product-details"
+            className="
+          absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100
+          transition-opacity duration-300
+          rounded-full bg-white/90 p-2 shadow
+        "
           >
             <Image
-              alt="badge"
-              width={20}
-              height={20}
+              alt="View details"
+              width={16}
+              height={16}
               src={"/icons/view-details.png"}
             />
           </Link>
-          <div className="w-full h-80 relative overflow-hidden rounded-t-md rounded-b- group">
+
+          {/* Image */}
+          <div className="relative h-80 w-full overflow-hidden">
             <Image
               alt={product.name}
-              className="product-image"
               src={product.image}
               fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </div>
 
-          <div className="px-3 py-2">
-            <div className="font-medium text-lg line-clamp-1">
+          {/* Content */}
+          <div className="px-4 py-4">
+            <div className="text-base font-medium text-[#070e1a] line-clamp-1">
               {product.name}
             </div>
-            <div className="font-bold text-xl mb-2 mt-2">
+
+            <div className="mt-2 text-lg font-semibold text-[#070e1a]">
               {formatMoney({
-                // Total price = base price * quantity
                 priceCents: product.priceCents * product.quantity,
               })}
             </div>
 
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex gap-3">
+            <div className="mt-4 flex items-center justify-between">
+              {/* Quantity */}
+              <div className="flex items-center gap-2 rounded-full border px-3 py-1">
                 <Image
                   alt="minus"
-                  className="cursor-pointer"
-                  width={15}
-                  height={20}
+                  className="cursor-pointer opacity-70 hover:opacity-100 transition"
+                  width={14}
+                  height={14}
                   src={"/icons/Minus.svg"}
                   onClick={() => decrement(product.id)}
                 />
 
-                <span className="px-3 py-1 rounded-sm bg-[#d9d9d9]">
+                <span className="min-w-[20px] text-center text-sm font-medium">
                   {product.quantity}
                 </span>
 
                 <Image
                   alt="plus"
-                  className="cursor-pointer"
-                  width={15}
-                  height={20}
+                  className="cursor-pointer opacity-70 hover:opacity-100 transition"
+                  width={14}
+                  height={14}
                   src={"/icons/Plus.svg"}
                   onClick={() => increment(product.id)}
                 />
               </div>
-              <button className="cart-btn">Add to Cart</button>
+
+              {/* Add to cart */}
+              <button
+                className="
+              rounded-full bg-[#070e1a] px-4 py-2 text-sm font-medium text-white
+              hover:bg-[#070e1a]/90 transition
+            "
+              >
+                Add to Cart
+              </button>
             </div>
           </div>
         </div>

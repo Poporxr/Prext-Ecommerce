@@ -1,38 +1,65 @@
 @import "tailwindcss";
 
 @layer utilities {
-  .nav-links{
-  @apply px-4 py-1.5 bg-[#f0f0f0]
-  hover:bg-[#e0e0e0]
-  rounded-2xl
-}
+  .nav-links {
+    @apply px-6 py-1.5 rounded-2xl text-gray-700 font-medium hover:bg-gray-100 transition;
+  }
 
-.nav-bar{
-  @apply fixed flex top-0 w-full z-50 flex-row justify-between items-center px-4 py-2 bg-transparent
-}
-.cart-btn{
-  @apply mt-2 w-[40%] cursor-pointer bg-black text-white py-2 rounded-md hover:bg-[#333] transition-colors
-}
-select {
-  @apply 
-  shadow-sm
+  .nav-bar {
+    @apply fixed top-2 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-between 
+    bg-white/90 backdrop-blur-md shadow-lg  rounded-[30px];
+  }
+
+  .search-input {
+    @apply rounded-full px-4 py-2 border border-gray-400 text-gray-700 placeholder-gray-500
+           focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition;
+  }
+
+  .cart-btn {
+    @apply mt-2 w-[45%] max-[446px]:w-[65%] max-[446]:py-3 cursor-pointer bg-black text-white py-2 rounded-md hover:bg-[#333] transition-colors;
+  }
+  select {
+    @apply shadow-sm
   border-gray-300
   focus:border-green-500
   focus:ring-green-500
   rounded-md
   py-0.5
   px-1
-  mt-2 mb-2
+  mt-2 mb-2;
+  }
+  .product-image {
+    @apply rounded-t-md w-full object-cover h-full transition-transform duration-300 ease-out cursor-pointer group-hover:scale-110;
+  }
+  .transition {
+    @apply transition-transform duration-300 ease-out cursor-pointer group-hover:scale-110;
+  }
+  .product-details {
+    @apply absolute p-2 z-10 bg-[#ffffffcc] rounded-lg top-2 right-2 hover:scale-110 transition-transform duration-300 ease-out cursor-pointer;
+  }
 }
-.product-image{
-  @apply rounded-t-md w-full object-cover h-full transition-transform duration-300 ease-out cursor-pointer group-hover:scale-110
-}
-.transition{
-  @apply
-  transition-transform duration-300 ease-out cursor-pointer group-hover:scale-110
-}
-.product-details{
-  @apply
- absolute p-2 z-10 bg-[#ffffffcc] rounded-lg top-2 right-2 hover:scale-110 transition-transform duration-300 ease-out cursor-pointer
-}
+
+:root {
+  --primary: #0a2540;
+  --primary-hover: #081f35;
+
+  --accent: #f5b301;
+  --accent-hover: #d99a00;
+
+  --body-bg: #060b14;
+  --section-bg: #0a1220;
+
+  --card-bg: #0e1726;
+  --card-border: #1f2937;
+  --card-hover: #142033;
+
+  --text-primary: #f9fafb;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+
+  --success-bg: #062f1e;
+  --success-text: #34d399;
+
+  --error-bg: #2a0a0a;
+  --error-text: #f87171;
 }
