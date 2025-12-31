@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { formatMoney } from "../../../../utils/money";
 import type { Product } from "./page";
+import { addToast } from "@heroui/toast";
 
 const sizes = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -12,12 +13,57 @@ interface Props {
 }
 
 export default function ProductDetailsClient({ product }: Props) {
-  const [quantity, setQuantity] = useState<number>(product.quantity ?? 1);
+  const [quantity, setQuantity] = useState<number>(1);
+  const [isAdding, setIsAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const increment = () => setQuantity((prev) => prev + 1);
   const decrement = () => setQuantity((prev) => Math.max(1, prev - 1));
 
   const totalPriceCents = product.priceCents * quantity;
+
+  const addToCart = async () => {
+    setIsAdding(true);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: String(product.id),
+          quantity: quantity,
+          userId: "user-123", // TODO: Replace with actual user ID from auth
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to add item to cart");
+      }
+
+      // Success - could show a toast notification here
+      addToast({
+        title: "Added To Cart",
+        description: "successfull",
+        color: "success",
+      });
+
+      
+      // Optionally refresh the page or redirect
+      // router.refresh();
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add item to cart";
+      setError(errorMessage);
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsAdding(false);
+    }
+  };
 
   return (
     <div className="mt-28 font-serif">
@@ -110,14 +156,21 @@ export default function ProductDetailsClient({ product }: Props) {
 
           {/* CTA */}
           <button
+            onClick={addToCart}
+            disabled={isAdding}
             className="
           mt-12 w-full rounded-full
           bg-[#0b0b0b] py-4 text-sm font-medium text-white
           hover:bg-black transition
+          disabled:opacity-50 disabled:cursor-not-allowed
         "
           >
-            Add to Cart
+            {isAdding ? "Adding..." : "Add to Cart"}
           </button>
+          
+          {error && (
+            <p className="mt-2 text-sm text-red-500 text-center">{error}</p>
+          )}
 
           {/* Micro trust text */}
           <p className="mt-4 text-center text-xs text-gray-400">

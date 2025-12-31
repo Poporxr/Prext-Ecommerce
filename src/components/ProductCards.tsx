@@ -13,6 +13,9 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
       quantity: 1, // each item gets its own quantity
     }))
   );
+  
+  const [addingItems, setAddingItems] = useState<Record<number, boolean>>({});
+  const [errors, setErrors] = useState<Record<number, string | null>>({});
 
   const increment = (id: number) =>
     setProductItems((prev) =>
@@ -29,24 +32,59 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
       )
     );
 
+  const addToCart = async (product: Product) => {
+    const productId = product.id;
+    setAddingItems((prev) => ({ ...prev, [productId]: true }));
+    setErrors((prev) => ({ ...prev, [productId]: null }));
+
+    try {
+      const productItem = productItems.find((item) => item.id === productId);
+      const quantity = productItem?.quantity || 1;
+
+      const response = await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: String(productId),
+          quantity: quantity,
+          userId: "user-123", // TODO: Replace with actual user ID from auth
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to add item to cart");
+      }
+
+      // Success - could show a toast notification here
+      alert("Item added to cart!");
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add item to cart";
+      setErrors((prev) => ({ ...prev, [productId]: errorMessage }));
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setAddingItems((prev) => ({ ...prev, [productId]: false }));
+    }
+  };
+
   return (
     <>
       {productItems.map((product: Product) => (
         <div
           key={product.slug}
           className="
-        group relative max-w-80 m-2 overflow-hidden rounded-2xl
-        bg-white shadow-sm hover:shadow-lg transition-shadow duration-300
-        max-[446px]:max-w-[97%] font-serif
+        group relative max-w-80 m-2 overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-lg transition-shadow duration-300 max-[446px]:max-w-[97%] font-serif
       "
         >
           {/* View details icon (hidden until hover) */}
           <Link
             href={`/productDetails/${product.slug}`}
             className="
-          absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100
-          transition-opacity duration-300
-          rounded-full bg-white/90 p-2 shadow
+          absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full bg-white/90 p-2 shadow
         "
           >
             <Image
@@ -107,12 +145,10 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
 
               {/* Add to cart */}
               <button
-                className="
-              rounded-full bg-[#070e1a] px-4 py-2 text-sm font-medium text-white
-              hover:bg-[#070e1a]/90 transition
-            "
-              >
-                Add to Cart
+                onClick={() => addToCart(product)}
+                disabled={addingItems[product.id]}
+                className="rounded-full bg-[#070e1a] px-4 py-2 text-sm font-medium text-white hover:bg-[#070e1a]/90 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                {addingItems[product.id] ? "Adding..." : "Add to Cart"}
               </button>
             </div>
           </div>

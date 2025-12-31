@@ -3,6 +3,9 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import NavBar from "../components/NavBar";
 
+// app/layout.tsx
+import { Providers } from "./providers";
+
 const playfair = Playfair_Display({
   variable: "--font-heading",
   subsets: ["latin"],
@@ -33,8 +36,10 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} antialiased  bg-[#f1f1f1]`}
       >
-        <NavBar />
-        {children}
+        <Providers>
+          <NavBar />
+          {children}
+        </Providers>
       </body>
     </html>
   );
