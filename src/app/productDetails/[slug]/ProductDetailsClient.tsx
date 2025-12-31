@@ -20,7 +20,7 @@ export default function ProductDetailsClient({ product }: Props) {
   const totalPriceCents = product.priceCents * quantity;
 
   return (
-    <div className="mt-28">
+    <div className="mt-28 font-serif">
       <div className="mx-auto flex max-w-6xl gap-20 px-6 max-[446px]:flex-col">
         {/* Image */}
         <div className="relative w-[48%] h-[560px] max-[446px]:w-full max-[446px]:h-[420px]">

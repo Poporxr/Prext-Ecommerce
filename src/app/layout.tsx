@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
-import { Roboto_Serif, Geist_Mono } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import NavBar from "../components/NavBar";
 
-const Sans = Roboto_Serif({
-  variable: "--font-roboto-serif",
+const playfair = Playfair_Display({
+  variable: "--font-heading",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -27,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${Sans.variable} ${geistMono.variable} antialiased  bg-[#f1f1f1]`}
+        className={`${playfair.variable} ${inter.variable} antialiased  bg-[#f1f1f1]`}
       >
         <NavBar />
         {children}

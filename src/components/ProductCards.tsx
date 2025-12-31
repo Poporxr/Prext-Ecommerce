@@ -37,7 +37,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
           className="
         group relative max-w-80 m-2 overflow-hidden rounded-2xl
         bg-white shadow-sm hover:shadow-lg transition-shadow duration-300
-        max-[446px]:max-w-[97%]
+        max-[446px]:max-w-[97%] font-serif
       "
         >
           {/* View details icon (hidden until hover) */}
@@ -69,7 +69,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
 
           {/* Content */}
           <div className="px-4 py-4">
-            <div className="text-base font-medium text-[#070e1a] line-clamp-1">
+            <div className="text-base font-medium text-[#070e1a] line-clamp-1 font-body">
               {product.name}
             </div>
 

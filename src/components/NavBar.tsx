@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const NavBar = () => {
   return (
-    <nav className="nav-bar w-[90%] fixed  left-0 right-0 p-1 z-50 mx-auto max-w-7xl max-[600px]:flex-col max-[600px]:gap-3">
+    <nav className="nav-bar w-[90%] fixed  left-0 right-0 p-1 z-50 mx-auto max-w-7xl max-[600px]:flex-col max-[600px]:gap-3 font-serif">
       <div className="flex gap-1 bg-[#a8a5a5f1] max-w-400 items-center justify-center p-1.5 rounded-3xl ">
         <Link className="nav-links" href={"/"}>
           Home
@@ -11,8 +11,8 @@ const NavBar = () => {
         <Link className="nav-links" href={"/accessories"}>
           Accessories
         </Link>
-        <Link className="nav-links" href={"/about"}>
-          About
+        <Link className="nav-links" href={"/orders"}>
+          Orders
         </Link>
    
       </div>

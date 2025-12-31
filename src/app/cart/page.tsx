@@ -28,8 +28,10 @@ const CartPage = () => {
       )
     );
   return (
-    <div className="flex gap-12">
-      <div className="w-[50%] p-1.5 bg-[#c4c2c2]  flex items-center justify-center rounded-[50px] shadow-2xl mt-10 ml-10">
+    <div className="mt-30 pl-20 font-serif">
+      <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
+      <div className="flex gap-12">
+      <div className="w-[50%] p-1.5 bg-[#c4c2c2]  flex  flex-col items-center justify-center rounded-[50px] shadow-2xl mt-10 ">
         <div
           className="cart-items  w-[100%] rounded-[45px] shadow-2xl bg-[#eae8e8] p-5"
           key={9}
@@ -134,6 +136,8 @@ const CartPage = () => {
         </div>
       </div>
     </div>
+    </div>
+
   );
 };
 
