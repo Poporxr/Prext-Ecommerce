@@ -37,6 +37,35 @@
   .product-details {
     @apply absolute p-2 z-10 bg-[#ffffffcc] rounded-lg top-2 right-2 hover:scale-110 transition-transform duration-300 ease-out cursor-pointer;
   }
+  .cart-nav {
+  @apply fixed top-4 left-1/2 -translate-x-1/2 z-50
+  flex items-center justify-between
+  w-[92%] max-w-6xl
+  px-6 py-3
+  rounded-full
+  bg-white/85 backdrop-blur-xl
+  shadow-[0_8px_30px_rgba(0,0,0,0.06)];
+}
+
+.cart-title {
+  @apply text-sm font-semibold tracking-wide text-gray-900;
+}
+
+.cart-back {
+  @apply text-lg text-gray-600 font-medium
+  hover:text-black
+  transition;
+}
+
+.cart-signin {
+  @apply text-sm font-medium
+  px-4 py-1.5
+  rounded-full
+  bg-black text-white
+  hover:bg-gray-800
+  transition;
+}
+
 }
 
 :root {

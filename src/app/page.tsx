@@ -1,5 +1,6 @@
 import ProductCard from "../components/ProductCards";
 import LandingPage from "@/components/LandingPage";
+import NavBar from "@/components/NavBar";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -32,6 +33,7 @@ export default async function Home() {
 
   return (
     <main>
+      <NavBar />
       <LandingPage />
       <h3 className="pl-5 text-4xl font-serif mb-10">Shop Now</h3>
       <div className="grid grid-cols-4 p-4 p-4 max-[446px]:grid-cols-1 max-[768px]:grid-cols-2 max-[1024px]:grid-cols-3 gap-4">
