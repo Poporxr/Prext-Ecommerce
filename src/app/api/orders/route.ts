@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { adminDB } from "@/lib/firebaseAdmins";
+import { adminDB } from "@/lib/firebase/firebaseAdmins";
 import cloudinary from "@/lib/cloudinary";
 
 // Ensure Node.js runtime for Admin SDK and Cloudinary.
@@ -181,7 +181,8 @@ export async function POST(request: NextRequest) {
     imageUrl = uploadResult.secure_url;
   } catch (error) {
     console.error("Cloudinary upload failed in POST /api/products", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
     return NextResponse.json(
       {

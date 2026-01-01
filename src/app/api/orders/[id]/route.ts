@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { connectDB } from "../../../../lib/firebase";
+import { connectDB } from "../../../../lib/firebase/firebase";
 
 interface OrderItem {
   productId: string;

@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { adminDB } from "@/lib/firebaseAdmins";
+import { adminDB } from "@/lib/firebase/firebaseAdmins";
 import { notFound } from "next/navigation";
 import ProductDetailsClient from "./ProductDetailsClient";
 

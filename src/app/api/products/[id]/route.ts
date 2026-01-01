@@ -5,7 +5,7 @@
 // - DELETE /api/products/:id  -> delete a product
 
 import { NextRequest, NextResponse } from "next/server";
-import { adminDB } from "@/lib/firebaseAdmins";
+import { adminDB } from "@/lib/firebase/firebaseAdmins";
 
 // Ensure Node.js runtime so we can use the Admin SDK.
 export const runtime = "nodejs";
@@ -56,18 +56,24 @@ export async function GET(
   try {
     // Handle params as either sync or async (Next.js 16 compatibility)
     const resolvedParams = params instanceof Promise ? await params : params;
-    
+
     if (!resolvedParams || !resolvedParams.id) {
       return NextResponse.json(
-        { error: "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}." },
+        {
+          error:
+            "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}.",
+        },
         { status: 400 }
       );
     }
-    
+
     const rawId = String(resolvedParams.id).trim();
     if (!rawId) {
       return NextResponse.json(
-        { error: "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}." },
+        {
+          error:
+            "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}.",
+        },
         { status: 400 }
       );
     }
@@ -93,7 +99,10 @@ export async function GET(
       const ref = adminDB.collection("products").doc(rawId);
       const snap = await ref.get();
       if (!snap.exists) {
-        return NextResponse.json({ error: "Product not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Product not found" },
+          { status: 404 }
+        );
       }
       docSnap = snap;
     }
@@ -128,18 +137,24 @@ export async function PUT(
   try {
     // Handle params as either sync or async (Next.js 16 compatibility)
     const resolvedParams = params instanceof Promise ? await params : params;
-    
+
     if (!resolvedParams || !resolvedParams.id) {
       return NextResponse.json(
-        { error: "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}." },
+        {
+          error:
+            "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}.",
+        },
         { status: 400 }
       );
     }
-    
+
     const rawId = String(resolvedParams.id).trim();
     if (!rawId) {
       return NextResponse.json(
-        { error: "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}." },
+        {
+          error:
+            "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}.",
+        },
         { status: 400 }
       );
     }
@@ -178,7 +193,10 @@ export async function PUT(
       ref = adminDB.collection("products").doc(rawId);
       const snap = await ref.get();
       if (!snap.exists) {
-        return NextResponse.json({ error: "Product not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Product not found" },
+          { status: 404 }
+        );
       }
     }
     const now = new Date().toISOString();
@@ -214,18 +232,24 @@ export async function DELETE(
   try {
     // Handle params as either sync or async (Next.js 16 compatibility)
     const resolvedParams = params instanceof Promise ? await params : params;
-    
+
     if (!resolvedParams || !resolvedParams.id) {
       return NextResponse.json(
-        { error: "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}." },
+        {
+          error:
+            "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}.",
+        },
         { status: 400 }
       );
     }
-    
+
     const rawId = String(resolvedParams.id).trim();
     if (!rawId) {
       return NextResponse.json(
-        { error: "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}." },
+        {
+          error:
+            "Invalid product id in path. Expected /api/products/{firestoreId} or /api/products/{numericId}.",
+        },
         { status: 400 }
       );
     }
@@ -252,7 +276,10 @@ export async function DELETE(
       const ref = adminDB.collection("products").doc(rawId);
       const snap = await ref.get();
       if (!snap.exists) {
-        return NextResponse.json({ error: "Product not found" }, { status: 404 });
+        return NextResponse.json(
+          { error: "Product not found" },
+          { status: 404 }
+        );
       }
       docSnap = snap;
     }

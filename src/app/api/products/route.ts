@@ -5,7 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { adminDB } from "@/lib/firebaseAdmins";
+import { adminDB } from "@/lib/firebase/firebaseAdmins";
 import cloudinary from "@/lib/cloudinary";
 
 // Ensure this route runs in the Node.js runtime so we can use the Admin SDK and Cloudinary.

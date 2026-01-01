@@ -3,7 +3,7 @@
 // - DELETE /api/Cart/:id -> delete cart item (by cart doc id or productId)
 
 import { NextRequest, NextResponse } from "next/server";
-import { adminDB } from "@/lib/firebaseAdmins";
+import { adminDB } from "@/lib/firebase/firebaseAdmins";
 
 export const runtime = "nodejs";
 
