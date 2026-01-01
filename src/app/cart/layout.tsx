@@ -1,22 +1,8 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
 import "../globals.css";
 import CartNavBar from "./NavBar";
 
 
-const playfair = Playfair_Display({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "600", "700"],
-});
-
-const inter = Inter({
-  variable: "--font-body",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Prext | Ecommerce",
@@ -31,13 +17,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${playfair.variable} ${inter.variable} antialiased  bg-[#f1f1f1]`}
-      >
-          <CartNavBar />
+<body>
+<CartNavBar />
           {children}
-
-      </body>
+</body>
     </html>
   );
 }

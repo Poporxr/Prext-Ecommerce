@@ -1,7 +1,11 @@
+import calculateCartTotals from "./calculateTotal";
 import CartPageClient from "./CartPageClient";
+import { Totals } from "./CartPageClient";
 
-
-
+export interface Props {
+  cartItems: CartItems[];
+  totals: Totals;
+}
 
 interface SizesShape {
   small: "S";
@@ -45,6 +49,8 @@ const Page = async () => {
     ? result.data
     : Object.values(result.data ?? {});
 
-  return <CartPageClient  cartItems={cartItems} />;
+    const totals = calculateCartTotals(cartItems)
+
+  return <CartPageClient  cartItems={cartItems} totals={totals}/>;
 };
 export default Page;

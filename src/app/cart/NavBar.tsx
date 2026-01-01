@@ -13,7 +13,7 @@ const CartNavBar =  () => {
   <Link href="/signin" className="cart-signin">
     Sign in
   </Link>
-</nav>;
+</nav>
     </>
   )
 }
