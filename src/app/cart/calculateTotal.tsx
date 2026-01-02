@@ -1,6 +1,4 @@
-import { CartItems } from "./page";
-
-
+import { CartItems } from "./CartPageClient";
 
 function calculateCartTotals(cartItems: CartItems[]) {
   const subtotalCents = cartItems.reduce((sum, item) => {

@@ -1,56 +1,106 @@
-import calculateCartTotals from "./calculateTotal";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase/firebase";
 import CartPageClient from "./CartPageClient";
-import { Totals } from "./CartPageClient";
+import { CartItems } from "./CartPageClient";
 
-export interface Props {
-  cartItems: CartItems[];
-  totals: Totals;
-}
+const Page = () => {
+  const router = useRouter();
+  const [cartItems, setCartItems] = useState<CartItems[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-interface SizesShape {
-  small: "S";
-  medium: "M";
-  large: "L";
-  xl: "XL";
-  xxl: "XXL";
-  defaultSize: "S" | "M" | "L" | "XL" | "XXL";
-}
-export interface CartItems{
-  id: string;
-  productId: string;
-  userId: string;
-  quantity: number;
-  product: Product
-}
-export interface Product {
-  firestoreId?: string;
-  id: number;
-  image: string;
-  name: string;
-  slug: string;
-  description: string;
-  sizes: SizesShape;
-  priceCents: number;
-  quantity: number;
-  createdAt: string;
-  updatedAt: string;
-  [key: string]: unknown;
-}
+  useEffect(() => {
+    const fetchCart = async () => {
+      setLoading(true);
+      setError(null);
 
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          // User not authenticated - redirect to signup
+          router.push("/signup");
+          return;
+        }
 
+        const token = await user.getIdToken();
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+        const response = await fetch("/api/cart", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-const Page = async () => {
-  const data = await fetch(`${BASE_URL}/api/cart`, { cache: "no-store" });
-  const result = await data.json();
+        const result = await response.json();
 
-  const cartItems = Array.isArray(result.data)
-    ? result.data
-    : Object.values(result.data ?? {});
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Token expired or invalid - redirect to signup
+            router.push("/signup");
+            return;
+          }
+          throw new Error(result.error || "Failed to fetch cart items");
+        }
 
-    const totals = calculateCartTotals(cartItems)
+        if (result.success && result.data) {
+          const items = Array.isArray(result.data)
+            ? result.data
+            : Object.values(result.data ?? {});
+          setCartItems(items);
+        } else {
+          setCartItems([]);
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load cart";
+        setError(errorMessage);
+        console.error("Error fetching cart:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  return <CartPageClient  cartItems={cartItems} totals={totals}/>;
+    fetchCart();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="mt-20 pl-20 font-serif">
+        <div className="flex w-[100%] flex-col">
+          <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
+          <p className="text-gray-600">Loading your cart...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mt-20 pl-20 font-serif">
+        <div className="flex w-[100%] flex-col">
+          <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
+          <p className="text-red-600">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!cartItems || cartItems.length === 0) {
+    return (
+      <div className="mt-20 pl-20 font-serif">
+        <div className="flex w-[100%] flex-col">
+          <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
+          <p className="text-gray-600">Your cart is empty</p>
+        </div>
+      </div>
+    );
+  }
+
+  return <CartPageClient cartItems={cartItems} setCartItems={setCartItems} />;
 };
+
 export default Page;

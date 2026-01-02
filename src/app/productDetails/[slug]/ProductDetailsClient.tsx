@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase/firebase";
 import { formatMoney } from "../../../../utils/money";
 import type { Product } from "./page";
 import { showToast } from "../../../components/Toast";
-import CartNavbar from "./NavBar"
+import CartNavbar from "./NavBar";
 //import { playfair,inter } from "@/app/layout";
-
 
 const sizes = ["S", "M", "L", "XL", "XXL"] as const;
 
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function ProductDetailsClient({ product }: Props) {
+  const router = useRouter();
   const [quantity, setQuantity] = useState<number>(1);
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,21 +32,35 @@ export default function ProductDetailsClient({ product }: Props) {
     setError(null);
 
     try {
+      const user = auth.currentUser;
+      if (!user) {
+        // Redirect to login
+        router.push("/signup");
+        return;
+      }
+
+      const token = await user.getIdToken();
+
       const response = await fetch("/api/cart", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           productId: String(product.id),
           quantity: quantity,
-          userId: "user-123", // TODO: Replace with actual user ID from auth
+          // Remove userId - it's derived from token
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok || !data.success) {
+        if (response.status === 401) {
+          router.push("/signup");
+          return;
+        }
         throw new Error(data.error || "Failed to add item to cart");
       }
 
@@ -63,7 +79,7 @@ export default function ProductDetailsClient({ product }: Props) {
 
   return (
     <>
-    <CartNavbar name={name}/>
+      <CartNavbar name={name} />
       <div className="mt-28 font-serif">
         <div className="mx-auto flex max-w-6xl gap-20 px-6 max-[446px]:flex-col">
           {/* Image */}

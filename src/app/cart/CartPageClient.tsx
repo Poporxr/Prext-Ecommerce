@@ -1,9 +1,43 @@
 "use client";
 
 import Image from "next/image";
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase/firebase";
 import { formatMoney } from "../../../utils/money";
-import {CartItems} from "./page"
+import calculateCartTotals from "./calculateTotal";
+
+interface SizesShape {
+  small: "S";
+  medium: "M";
+  large: "L";
+  xl: "XL";
+  xxl: "XXL";
+  defaultSize: "S" | "M" | "L" | "XL" | "XXL";
+}
+
+export interface Product {
+  firestoreId?: string;
+  id: number;
+  image: string;
+  name: string;
+  slug: string;
+  description: string;
+  sizes: SizesShape;
+  priceCents: number;
+  quantity: number;
+  createdAt: string;
+  updatedAt: string;
+  [key: string]: unknown;
+}
+
+export interface CartItems {
+  id: string;
+  productId: string;
+  userId: string;
+  quantity: number;
+  product: Product;
+}
 
 export interface Totals {
   subtotalCents: number;
@@ -15,26 +49,161 @@ export interface Totals {
 
 export interface Props {
   cartItems: CartItems[];
-  totals: Totals;
+  setCartItems: React.Dispatch<React.SetStateAction<CartItems[]>>;
 }
 
-const CartPageClient = ( {cartItems, totals} : Props) => {
+const CartPageClient = ({ cartItems, setCartItems }: Props) => {
+  const router = useRouter();
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [updatingItems, setUpdatingItems] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [deletingItems, setDeletingItems] = useState<Record<string, boolean>>(
+    {}
+  );
 
-const [quantities, setQuantities] = useState<Record<string, number>>({});
+  // Initialize quantities from cart items
+  useEffect(() => {
+    const initialQuantities: Record<string, number> = {};
+    cartItems.forEach((item) => {
+      initialQuantities[item.id] = item.quantity;
+    });
+    setQuantities(initialQuantities);
+  }, [cartItems]);
 
-const increment = (id: string) => {
-  setQuantities((prev) => ({
-    ...prev,
-    [id]: (prev[id] ?? 1) + 1,
-  }));
-};
+  // Calculate totals whenever cartItems or quantities change
+  const totals = calculateCartTotals(
+    cartItems.map((item) => ({
+      ...item,
+      quantity: quantities[item.id] ?? item.quantity,
+    }))
+  );
 
-const decrement = (id: string) => {
-  setQuantities((prev) => ({
-    ...prev,
-    [id]: Math.max(1, (prev[id] ?? 1) - 1),
-  }));
-};
+  const updateQuantity = async (cartItemId: string, newQuantity: number) => {
+    if (newQuantity < 1) return;
+
+    setUpdatingItems((prev) => ({ ...prev, [cartItemId]: true }));
+
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        router.push("/signup");
+        return;
+      }
+
+      const token = await user.getIdToken();
+
+      const response = await fetch(`/api/cart/${cartItemId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          quantity: newQuantity,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/signup");
+          return;
+        }
+        throw new Error(result.error || "Failed to update quantity");
+      }
+
+      if (result.success && result.data) {
+        // Update the cart item in state
+        setCartItems((prev) =>
+          prev.map((item) =>
+            item.id === cartItemId ? result.data : item
+          )
+        );
+        setQuantities((prev) => ({
+          ...prev,
+          [cartItemId]: newQuantity,
+        }));
+      }
+    } catch (err) {
+      console.error("Error updating quantity:", err);
+      alert(
+        err instanceof Error ? err.message : "Failed to update quantity"
+      );
+    } finally {
+      setUpdatingItems((prev) => ({ ...prev, [cartItemId]: false }));
+    }
+  };
+
+  const deleteCartItem = async (cartItemId: string) => {
+    if (!confirm("Are you sure you want to remove this item from your cart?")) {
+      return;
+    }
+
+    setDeletingItems((prev) => ({ ...prev, [cartItemId]: true }));
+
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        router.push("/signup");
+        return;
+      }
+
+      const token = await user.getIdToken();
+
+      const response = await fetch(`/api/cart/${cartItemId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          router.push("/signup");
+          return;
+        }
+        throw new Error(result.error || "Failed to delete item");
+      }
+
+      // Remove the item from state
+      setCartItems((prev) => prev.filter((item) => item.id !== cartItemId));
+      setQuantities((prev) => {
+        const updated = { ...prev };
+        delete updated[cartItemId];
+        return updated;
+      });
+    } catch (err) {
+      console.error("Error deleting item:", err);
+      alert(err instanceof Error ? err.message : "Failed to delete item");
+    } finally {
+      setDeletingItems((prev) => ({ ...prev, [cartItemId]: false }));
+    }
+  };
+
+  const increment = (cartItemId: string) => {
+    const currentQuantity = quantities[cartItemId] ?? 1;
+    const newQuantity = currentQuantity + 1;
+    setQuantities((prev) => ({
+      ...prev,
+      [cartItemId]: newQuantity,
+    }));
+    updateQuantity(cartItemId, newQuantity);
+  };
+
+  const decrement = (cartItemId: string) => {
+    const currentQuantity = quantities[cartItemId] ?? 1;
+    const newQuantity = Math.max(1, currentQuantity - 1);
+    setQuantities((prev) => ({
+      ...prev,
+      [cartItemId]: newQuantity,
+    }));
+    updateQuantity(cartItemId, newQuantity);
+  };
 
 
  
@@ -82,37 +251,56 @@ const decrement = (id: string) => {
                       </div>
 
                       <div className="flex flex-col items-end justify-between py-1.5 px-2">
-                        {/* delete icon stays */}
+                        {/* delete icon */}
                         <Image
                           src="/icons/delete.svg"
                           alt="Remove item"
                           width={18}
                           height={18}
-                          className="cursor-pointer opacity-70 hover:opacity-100 transition mb-2"
+                          className={`cursor-pointer opacity-70 hover:opacity-100 transition mb-2 ${
+                            deletingItems[cartItem.id] ? "opacity-50 cursor-not-allowed" : ""
+                          }`}
+                          onClick={() => deleteCartItem(cartItem.id)}
                         />
 
                         {/* quantity control – now matches product page */}
                         <div className="flex items-center gap-2 rounded-full border px-3 py-1">
                           <Image
                             alt="minus"
-                            className="cursor-pointer opacity-70 hover:opacity-100 transition"
+                            className={`cursor-pointer opacity-70 hover:opacity-100 transition ${
+                              updatingItems[cartItem.id] || deletingItems[cartItem.id]
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
                             width={14}
                             height={14}
                             src="/icons/Minus.svg"
-                            onClick={() => decrement(cartItem.productId)}
+                            onClick={() =>
+                              !updatingItems[cartItem.id] &&
+                              !deletingItems[cartItem.id] &&
+                              decrement(cartItem.id)
+                            }
                           />
 
                           <span className="min-w-[20px] text-center text-sm font-medium">
-                            {quantity}
+                            {updatingItems[cartItem.id] ? "..." : quantity}
                           </span>
 
                           <Image
                             alt="plus"
-                            className="cursor-pointer opacity-70 hover:opacity-100 transition"
+                            className={`cursor-pointer opacity-70 hover:opacity-100 transition ${
+                              updatingItems[cartItem.id] || deletingItems[cartItem.id]
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
                             width={14}
                             height={14}
                             src="/icons/Plus.svg"
-                            onClick={() => increment(cartItem.productId)}
+                            onClick={() =>
+                              !updatingItems[cartItem.id] &&
+                              !deletingItems[cartItem.id] &&
+                              increment(cartItem.id)
+                            }
                           />
                         </div>
                       </div>

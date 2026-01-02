@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { adminDB } from "@/lib/firebase/firebaseAdmins";
+import { verifyFirebaseToken, createAuthErrorResponse } from "@/lib/auth/verifyToken";
 
 export const runtime = "nodejs";
 
@@ -102,22 +103,35 @@ interface ApiError {
 }
 
 // Type for incoming request body (flexible to handle various formats)
+// Note: userId is NOT accepted from client - it's derived from the verified token
 interface CartRequestBody {
   productId?: string;
   product_id?: string;
   "product-id"?: string;
   product?: string;
   quantity?: number | string;
-  userId?: string;
   [key: string]: unknown;
 }
 
 // GET /api/Cart
-// Fetches all cart items with product details (stored in cart). When you add auth, you should filter by userId here.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function GET(_request: NextRequest) {
+// Fetches all cart items for the authenticated user
+export async function GET(request: NextRequest) {
+  // Verify authentication
+  const verifiedToken = await verifyFirebaseToken(request);
+  if (!verifiedToken) {
+    return createAuthErrorResponse(
+      "Authentication required. Please log in to view your cart."
+    );
+  }
+
+  const userId = verifiedToken.userId;
+
   try {
-    const snapshot = await adminDB.collection("cart").get();
+    // Filter cart items by authenticated userId
+    const snapshot = await adminDB
+      .collection("cart")
+      .where("userId", "==", userId)
+      .get();
 
     // Product details are already stored in cart items, so just return them
     const items: CartItem[] = snapshot.docs.map((docSnap) => {
@@ -157,9 +171,11 @@ export async function GET(_request: NextRequest) {
 
 // POST /api/Cart
 // Adds a new cart item or increments quantity if item already exists.
+// Requires: Authorization header with Firebase ID token
 // Accepts:
-// - JSON body: { productId: string; quantity?: number; userId?: string }
-// - OR URL-encoded body: productId=...&quantity=...&userId=...
+// - JSON body: { productId: string; quantity?: number }
+// - OR URL-encoded body: productId=...&quantity=...
+// Note: userId is derived from the verified token, not from the request body
 export async function POST(req: NextRequest) {
   let productId: string;
   let quantity: number;
@@ -298,12 +314,16 @@ export async function POST(req: NextRequest) {
 
     quantity = rawQuantity;
 
-    // For now, allow client to pass userId or fallback to "anonymous".
-    if (json.userId && typeof json.userId === "string" && json.userId.trim()) {
-      userId = json.userId.trim();
-    } else {
-      userId = "anonymous"; // later replace with Firebase Auth uid
+    // Verify authentication and extract userId from token (never trust client-provided userId)
+    const verifiedToken = await verifyFirebaseToken(req);
+    if (!verifiedToken) {
+      return createAuthErrorResponse(
+        "Authentication required. Please log in to add items to your cart."
+      );
     }
+
+    // Use userId from verified token - never trust client-provided userId
+    userId = verifiedToken.userId;
   } catch (error) {
     console.error("Failed to parse request body in POST /api/cart", error);
 

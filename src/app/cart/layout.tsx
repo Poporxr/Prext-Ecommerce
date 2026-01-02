@@ -1,24 +1,14 @@
-import type { Metadata } from "next";
-import "../globals.css";
 import CartNavBar from "./NavBar";
 
-
-
-export const metadata: Metadata = {
-  title: "Prext | Ecommerce",
-  description:
-    "Shop quality products at unbeatable prices. Discover electronics, fashion, home essentials, and more with fast delivery, secure payments, and excellent customer support. Your one-stop online store for all your needs.",
-};
-
-export default function RootLayout({
+export default function CartLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-        <CartNavBar />
-          {children}
-    </html>
+    <>
+      <CartNavBar />
+      {children}
+    </>
   );
 }

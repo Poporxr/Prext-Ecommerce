@@ -4,10 +4,13 @@ import Image from "next/image";
 import { formatMoney } from "../../utils/money";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase/firebase";
 import { ProductsCardsprops, Product } from "@/app/page";
 import { showToast } from "./Toast";
 
 const ProductCard = ({ products }: ProductsCardsprops) => {
+  const router = useRouter();
   const [productItems, setProductItems] = useState(
     products.map((product) => ({
       ...product,
@@ -39,6 +42,15 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
     setErrors((prev) => ({ ...prev, [productId]: null }));
 
     try {
+      const user = auth.currentUser;
+      if (!user) {
+        // Redirect to login
+        router.push("/signup");
+        return;
+      }
+
+      const token = await user.getIdToken();
+
       const productItem = productItems.find((item) => item.id === productId);
       const quantity = productItem?.quantity || 1;
 
@@ -46,17 +58,22 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           productId: String(productId),
           quantity: quantity,
-          userId: "user-123", // TODO: Replace with actual user ID from auth
+          // Remove userId - it's derived from token
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok || !data.success) {
+        if (response.status === 401) {
+          router.push("/signup");
+          return;
+        }
         throw new Error(data.error || "Failed to add item to cart");
       }
 

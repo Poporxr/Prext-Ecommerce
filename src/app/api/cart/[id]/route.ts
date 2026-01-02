@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { adminDB } from "@/lib/firebase/firebaseAdmins";
+import { verifyFirebaseToken, createAuthErrorResponse } from "@/lib/auth/verifyToken";
 
 export const runtime = "nodejs";
 
@@ -34,24 +35,34 @@ interface RouteParams {
 }
 
 // Helper to resolve a cart document by:
-// 1) Firestore document id (fast path)
-// 2) productId == id (fallback)
-// NOTE: For now this ignores userId; later you should scope by user.
+// 1) Firestore document id (fast path) - must belong to userId
+// 2) productId == id (fallback) - must belong to userId
+// Ensures users can only access their own cart items
 async function resolveCartDocByIdOrProductId(
-  idOrProductId: string
+  idOrProductId: string,
+  userId: string
 ): Promise<FirebaseFirestore.DocumentSnapshot | null> {
   const clean = idOrProductId.trim();
   if (!clean) return null;
 
   const collectionRef = adminDB.collection("cart");
 
-  // Try as document id
+  // Try as document id first
   const docRef = collectionRef.doc(clean);
   const docSnap = await docRef.get();
-  if (docSnap.exists) return docSnap;
+  if (docSnap.exists) {
+    const data = docSnap.data() as CartItemDoc;
+    // Verify it belongs to the authenticated user
+    if (data.userId === userId) {
+      return docSnap;
+    }
+    // If userId doesn't match, return null (don't reveal existence)
+    return null;
+  }
 
-  // Fallback: try as productId
+  // Fallback: try as productId, scoped to userId
   const snapshot = await collectionRef
+    .where("userId", "==", userId)
     .where("productId", "==", clean)
     .limit(1)
     .get();
@@ -62,11 +73,22 @@ async function resolveCartDocByIdOrProductId(
 }
 
 // PUT /api/Cart/:id
+// Requires: Authorization header with Firebase ID token
 // Body: { quantity: number }
+// Updates cart item quantity - only for items belonging to the authenticated user
 export async function PUT(
   req: NextRequest,
   { params }: { params: RouteParams }
 ) {
+  // Verify authentication
+  const verifiedToken = await verifyFirebaseToken(req);
+  if (!verifiedToken) {
+    return createAuthErrorResponse(
+      "Authentication required. Please log in to update your cart."
+    );
+  }
+
+  const userId = verifiedToken.userId;
   let quantity: number;
 
   try {
@@ -110,7 +132,7 @@ export async function PUT(
   }
 
   try {
-    const docSnap = await resolveCartDocByIdOrProductId(rawId);
+    const docSnap = await resolveCartDocByIdOrProductId(rawId, userId);
     if (!docSnap) {
       const body: ApiError = {
         success: false,
@@ -149,10 +171,21 @@ export async function PUT(
 }
 
 // DELETE /api/Cart/:id
+// Requires: Authorization header with Firebase ID token
+// Deletes cart item - only for items belonging to the authenticated user
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: RouteParams }
 ) {
+  // Verify authentication
+  const verifiedToken = await verifyFirebaseToken(req);
+  if (!verifiedToken) {
+    return createAuthErrorResponse(
+      "Authentication required. Please log in to delete items from your cart."
+    );
+  }
+
+  const userId = verifiedToken.userId;
   const rawId = (params?.id ?? "").trim();
   if (!rawId) {
     const body: ApiError = {
@@ -164,7 +197,7 @@ export async function DELETE(
   }
 
   try {
-    const docSnap = await resolveCartDocByIdOrProductId(rawId);
+    const docSnap = await resolveCartDocByIdOrProductId(rawId, userId);
     if (!docSnap) {
       const body: ApiError = {
         success: false,

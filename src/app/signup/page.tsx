@@ -1,9 +1,8 @@
 "use client";
 
 import Image from "next/image";
-//import { createUserWithEmailAndPassword } from "firebase/auth";
-//import { signInWithEmailAndPassword } from "firebase/auth";
-//import { auth } from "@/lib/firebase/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase/firebase";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,21 +16,39 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 
-{/*export async function login(email: string, password: string) {
-  await signInWithEmailAndPassword(auth, email, password);
-}
-  export async function signup(email: string, password: string) {
-  await createUserWithEmailAndPassword(auth, email, password);
-}
-
-*/}
 
 
 export const Signup = () => {
   const router = useRouter();
-
+  const [email, setEmail] = useState("");
+      const [password, setPassword] = useState("");
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState<string | null>(null);
+  
+  
+      const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(null);
+        setLoading(true);
+  
+        try {
+          await createUserWithEmailAndPassword(auth, email, password);
+          // optional redirect
+           router.push("/")
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("An unknown error occurred");
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
+  
   const goToLogin = () => {
     router.push("/login"); // Navigate to signup page
   };
@@ -59,7 +76,7 @@ export const Signup = () => {
          <CardDescription></CardDescription>
        </CardHeader>
        <CardContent>
-         <form>
+         <form onSubmit={handleSubmit}>
            <div className="flex flex-col gap-6">
              <div className="grid gap-2">
                <Label htmlFor="email">Email</Label>
@@ -68,7 +85,11 @@ export const Signup = () => {
                  type="email"
                  placeholder="m@example.com"
                  required
+                 value={email}
                  className="rounded-[30px]"
+                 onChange={(e) => {
+                   setEmail(e.target.value);
+                 }}
                />
              </div>
              <div className="grid gap-2">
@@ -78,31 +99,39 @@ export const Signup = () => {
                  type="password"
                  className="rounded-[30px]"
                  required
+                 value={password}
+                 onChange={(e) => {
+                   setPassword(e.target.value);
+                 }}
                />
              </div>
+             {error && <p className="text-red-500 text-sm">{error}</p>}
            </div>
+           <CardFooter className="flex-col gap-2 mt-19">
+             <Button
+               type="submit"
+               className="w-full rounded-[30px] cursor-pointer"
+             >
+               {loading ? "Signing in..." : "Sign in"}
+             </Button>
+             <Button
+               variant="outline"
+               className="w-full rounded-[30px] cursor-pointer"
+               disabled={loading}
+             >
+               Sign Up with Google
+             </Button>
+             <CardAction className="flex items-center justify-center gap-1 pl-4 mt-[10%]">
+               <p className="text-[#8e8d8d] text-sm">
+                 Already have an account?
+               </p>
+               <Button variant="link" onClick={goToLogin}>
+                 Log In
+               </Button>
+             </CardAction>
+           </CardFooter>
          </form>
        </CardContent>
-       <CardFooter className="flex-col gap-2">
-         <Button type="submit" className="w-full rounded-[30px] cursor-pointer">
-           Sign Up
-         </Button>
-         <Button
-           variant="outline"
-           className="w-full rounded-[30px] cursor-pointer"
-         >
-           Sign Up with Google
-         </Button>
-         <CardAction className="flex items-center justify-center gap-1 pl-4 mt-30">
-          <p className="text-[#8e8d8d] text-sm">Already have an account?</p>
-           <Button
-             variant="link"
-             onClick={goToLogin}
-           >
-             Log In
-           </Button>
-         </CardAction>
-       </CardFooter>
      </Card>
    </section>
  );
