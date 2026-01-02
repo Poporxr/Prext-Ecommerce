@@ -78,7 +78,7 @@ async function resolveCartDocByIdOrProductId(
 // Updates cart item quantity - only for items belonging to the authenticated user
 export async function PUT(
   req: NextRequest,
-  { params }: { params: RouteParams }
+  { params }: { params: Promise<RouteParams> | RouteParams }
 ) {
   // Verify authentication
   const verifiedToken = await verifyFirebaseToken(req);
@@ -121,7 +121,9 @@ export async function PUT(
     return NextResponse.json(body, { status: 400 });
   }
 
-  const rawId = (params?.id ?? "").trim();
+  // Handle async params (Next.js 15+)
+  const resolvedParams = await Promise.resolve(params);
+  const rawId = (resolvedParams?.id ?? "").trim();
   if (!rawId) {
     const body: ApiError = {
       success: false,
@@ -175,7 +177,7 @@ export async function PUT(
 // Deletes cart item - only for items belonging to the authenticated user
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: RouteParams }
+  { params }: { params: Promise<RouteParams> | RouteParams }
 ) {
   // Verify authentication
   const verifiedToken = await verifyFirebaseToken(req);
@@ -186,7 +188,10 @@ export async function DELETE(
   }
 
   const userId = verifiedToken.userId;
-  const rawId = (params?.id ?? "").trim();
+  
+  // Handle async params (Next.js 15+)
+  const resolvedParams = await Promise.resolve(params);
+  const rawId = (resolvedParams?.id ?? "").trim();
   if (!rawId) {
     const body: ApiError = {
       success: false,

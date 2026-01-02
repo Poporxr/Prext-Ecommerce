@@ -5,7 +5,20 @@ import { Fragment, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase/firebase";
 import { formatMoney } from "../../../utils/money";
-import calculateCartTotals from "./calculateTotal";
+//import calculateCartTotals from "./calculateTotal";
+import Link from "next/link";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+
 
 interface SizesShape {
   small: "S";
@@ -55,12 +68,9 @@ export interface Props {
 const CartPageClient = ({ cartItems, setCartItems }: Props) => {
   const router = useRouter();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [updatingItems, setUpdatingItems] = useState<Record<string, boolean>>(
-    {}
-  );
-  const [deletingItems, setDeletingItems] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [deletingItems, setDeletingItems] = useState<Record<string, boolean>>({});
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   // Initialize quantities from cart items
   useEffect(() => {
@@ -72,81 +82,31 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
   }, [cartItems]);
 
   // Calculate totals whenever cartItems or quantities change
-  const totals = calculateCartTotals(
+  /*const totals = calculateCartTotals(
     cartItems.map((item) => ({
       ...item,
       quantity: quantities[item.id] ?? item.quantity,
     }))
-  );
+  );*/
 
-  const updateQuantity = async (cartItemId: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
 
-    setUpdatingItems((prev) => ({ ...prev, [cartItemId]: true }));
 
-    try {
-      const user = auth.currentUser;
-      if (!user) {
-        router.push("/signup");
-        return;
-      }
-
-      const token = await user.getIdToken();
-
-      const response = await fetch(`/api/cart/${cartItemId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          quantity: newQuantity,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push("/signup");
-          return;
-        }
-        throw new Error(result.error || "Failed to update quantity");
-      }
-
-      if (result.success && result.data) {
-        // Update the cart item in state
-        setCartItems((prev) =>
-          prev.map((item) =>
-            item.id === cartItemId ? result.data : item
-          )
-        );
-        setQuantities((prev) => ({
-          ...prev,
-          [cartItemId]: newQuantity,
-        }));
-      }
-    } catch (err) {
-      console.error("Error updating quantity:", err);
-      alert(
-        err instanceof Error ? err.message : "Failed to update quantity"
-      );
-    } finally {
-      setUpdatingItems((prev) => ({ ...prev, [cartItemId]: false }));
-    }
+  const handleDeleteClick = (cartItemId: string) => {
+    setItemToDelete(cartItemId);
+    setDeleteDialogOpen(true);
   };
 
-  const deleteCartItem = async (cartItemId: string) => {
-    if (!confirm("Are you sure you want to remove this item from your cart?")) {
-      return;
-    }
+  const deleteCartItem = async () => {
+    if (!itemToDelete) return;
 
+    const cartItemId = itemToDelete;
+    setDeleteDialogOpen(false);
     setDeletingItems((prev) => ({ ...prev, [cartItemId]: true }));
 
     try {
       const user = auth.currentUser;
       if (!user) {
-        router.push("/signup");
+        router.push("/login");
         return;
       }
 
@@ -177,9 +137,11 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
         delete updated[cartItemId];
         return updated;
       });
+      setItemToDelete(null);
     } catch (err) {
       console.error("Error deleting item:", err);
       alert(err instanceof Error ? err.message : "Failed to delete item");
+      setItemToDelete(null);
     } finally {
       setDeletingItems((prev) => ({ ...prev, [cartItemId]: false }));
     }
@@ -192,7 +154,6 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
       ...prev,
       [cartItemId]: newQuantity,
     }));
-    updateQuantity(cartItemId, newQuantity);
   };
 
   const decrement = (cartItemId: string) => {
@@ -202,7 +163,6 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
       ...prev,
       [cartItemId]: newQuantity,
     }));
-    updateQuantity(cartItemId, newQuantity);
   };
 
 
@@ -210,6 +170,26 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
 
   return (
     <>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove item from cart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this item from your cart? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setItemToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={deleteCartItem}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="mt-20 pl-20 font-serif ">
         <div className="flex w-[100%] flex-col ">
           <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
@@ -220,9 +200,9 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
             >
               {cartItems.map((cartItem) => {
                 const quantity =
-                  quantities[cartItem.productId] ?? cartItem.quantity ?? 1;
+                  quantities[cartItem.id] ?? cartItem.quantity ?? 1;
                 return (
-                  <Fragment key={crypto.getRandomValues(new Uint32Array(1))[0]}>
+                  <Fragment key={cartItem.id}>
                     <div className="flex gap-6 justify-between    p-2.5">
                       <div className="flex ">
                         <div className="flex gap-2">
@@ -236,9 +216,9 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                           </div>
 
                           <div className="flex flex-col justify-between ">
-                            <h3 className="font-semibold">
+                           <Link href={`/productDetails/${cartItem.product.slug}`}>
                               {cartItem.product.name}
-                            </h3>
+                            </Link>
                             <p></p>
                             <h3 className="font-bold">
                               {formatMoney({
@@ -260,45 +240,33 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                           className={`cursor-pointer opacity-70 hover:opacity-100 transition mb-2 ${
                             deletingItems[cartItem.id] ? "opacity-50 cursor-not-allowed" : ""
                           }`}
-                          onClick={() => deleteCartItem(cartItem.id)}
+                          onClick={() => handleDeleteClick(cartItem.id)}
                         />
 
                         {/* quantity control – now matches product page */}
                         <div className="flex items-center gap-2 rounded-full border px-3 py-1">
                           <Image
                             alt="minus"
-                            className={`cursor-pointer opacity-70 hover:opacity-100 transition ${
-                              updatingItems[cartItem.id] || deletingItems[cartItem.id]
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
-                            }`}
+                            className={'cursor-pointer opacity-70 hover:opacity-100 transition '}
                             width={14}
                             height={14}
                             src="/icons/Minus.svg"
                             onClick={() =>
-                              !updatingItems[cartItem.id] &&
-                              !deletingItems[cartItem.id] &&
                               decrement(cartItem.id)
                             }
                           />
 
                           <span className="min-w-[20px] text-center text-sm font-medium">
-                            {updatingItems[cartItem.id] ? "..." : quantity}
+                            { quantity}
                           </span>
 
                           <Image
                             alt="plus"
-                            className={`cursor-pointer opacity-70 hover:opacity-100 transition ${
-                              updatingItems[cartItem.id] || deletingItems[cartItem.id]
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
-                            }`}
+                            className={'cursor-pointer opacity-70 hover:opacity-100 transition'}
                             width={14}
                             height={14}
                             src="/icons/Plus.svg"
                             onClick={() =>
-                              !updatingItems[cartItem.id] &&
-                              !deletingItems[cartItem.id] &&
                               increment(cartItem.id)
                             }
                           />
