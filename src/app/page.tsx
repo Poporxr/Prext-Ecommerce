@@ -1,7 +1,6 @@
 import ProductCard from "../components/ProductCards";
 import LandingPage from "@/components/LandingPage";
 import NavBar from "@/components/NavBar";
-
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export interface Product {
@@ -32,6 +31,7 @@ export default async function Home() {
   const products = await getProducts();
 
   return (
+      
     <main>
       <NavBar />
       <LandingPage />
@@ -41,6 +41,5 @@ export default async function Home() {
         <ProductCard products={products} />
       </div>
     </main>
-
   );
 }

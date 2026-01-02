@@ -25,7 +25,6 @@ const CartNavBar = ({name}: Name) => {
           Sign in
         </Link>
       </nav>
-      ;
     </>
   );
 };

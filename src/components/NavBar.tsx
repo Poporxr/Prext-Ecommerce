@@ -23,9 +23,9 @@ const NavBar = () => {
         />
      </div>
 
-      <div className="flex gap-1 bg-[#a8a5a5f1] items-center justify-between p-1 rounded-3xl   max-[600px]:w-full">
-        <Link className="nav-links" href={"/signin"}>
-          Sign In
+      <div className="flex gap-1 bg-[#a8a5a5f1] items-center justify-between p-1.5 rounded-3xl   max-[600px]:w-full">
+        <Link className="nav-links" href={"/signup"}>
+          Sign Up
         </Link>
         <Link className="nav-links flex gap-1 " href={"/cart"}>
           <Image src="/Icons/cart-icon.svg" alt="Cart" width={20} height={20} />

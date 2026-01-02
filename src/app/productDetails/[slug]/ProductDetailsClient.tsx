@@ -6,13 +6,13 @@ import { formatMoney } from "../../../../utils/money";
 import type { Product } from "./page";
 import { showToast } from "../../../components/Toast";
 import CartNavbar from "./NavBar"
+//import { playfair,inter } from "@/app/layout";
 
 
 const sizes = ["S", "M", "L", "XL", "XXL"] as const;
 
 interface Props {
   product: Product;
-  name: string;
 }
 
 export default function ProductDetailsClient({ product }: Props) {
