@@ -18,8 +18,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-
-
 interface SizesShape {
   small: "S";
   medium: "M";
@@ -68,7 +66,9 @@ export interface Props {
 const CartPageClient = ({ cartItems, setCartItems }: Props) => {
   const router = useRouter();
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [deletingItems, setDeletingItems] = useState<Record<string, boolean>>({});
+  const [deletingItems, setDeletingItems] = useState<Record<string, boolean>>(
+    {}
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
@@ -88,8 +88,6 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
       quantity: quantities[item.id] ?? item.quantity,
     }))
   );*/
-
-
 
   const handleDeleteClick = (cartItemId: string) => {
     setItemToDelete(cartItemId);
@@ -165,9 +163,6 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
     }));
   };
 
-
- 
-
   return (
     <>
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -232,7 +227,7 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                       <div className="flex flex-col items-end justify-between py-1.5 px-2">
                         {/* delete icon */}
                         <Image
-                          src="/icons/delete.svg"
+                          src="/images/icons/delete.svg"
                           alt="Remove item"
                           width={18}
                           height={18}
@@ -253,7 +248,7 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                             }
                             width={14}
                             height={14}
-                            src="/icons/Minus.svg"
+                            src="/images/icons/Minus.svg"
                             onClick={() => decrement(cartItem.id)}
                           />
 
@@ -268,7 +263,7 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                             }
                             width={14}
                             height={14}
-                            src="/icons/Plus.svg"
+                            src="/images/icons/Plus.svg"
                             onClick={() => increment(cartItem.id)}
                           />
                         </div>
@@ -290,6 +285,6 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
       </div>
     </>
   );
-}; 
+};
 
 export default CartPageClient;

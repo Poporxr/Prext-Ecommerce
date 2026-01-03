@@ -109,7 +109,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
               alt="View details"
               width={16}
               height={16}
-              src={"/icons/view-details.png"}
+              src={"/images/icons/view-details.png"}
             />
           </Link>
 
@@ -143,7 +143,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
                   className="cursor-pointer opacity-70 hover:opacity-100 transition"
                   width={14}
                   height={14}
-                  src={"/icons/Minus.svg"}
+                  src={"/images/icons/Minus.svg"}
                   onClick={() => decrement(product.id)}
                 />
 
@@ -156,7 +156,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
                   className="cursor-pointer opacity-70 hover:opacity-100 transition"
                   width={14}
                   height={14}
-                  src={"/icons/Plus.svg"}
+                  src={"/images/icons/Plus.svg"}
                   onClick={() => increment(product.id)}
                 />
               </div>
