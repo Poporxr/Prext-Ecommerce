@@ -23,7 +23,7 @@ const NavBar = () => {
       </div>
 
       <div className="flex gap-1 bg-[#a8a5a5f1] items-center justify-between p-1.5 rounded-3xl max-[446px]:rounded-4xl  max-[600px]:w-full">
-        <Link href={""} className="nav-links">
+        <Link href={""} className="nav-links lg:hidden md:hidden">
           <Image
             src={"/icons/hamburger.svg"}
             alt="hmburger"
@@ -31,7 +31,8 @@ const NavBar = () => {
             height={40}
           />
         </Link>
-        <Link className="nav-links flex gap-1 " href={"/cart"}>
+ 
+        <Link className="nav-links lg:hidden md:hidden " href={"/cart"}>
           <Image src="/Icons/cart-icon.svg" alt="Cart" width={30} height={30} />
         </Link>
 

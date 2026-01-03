@@ -190,23 +190,19 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="mt-20 pl-20 font-serif ">
+      <div className="mt-20 max-[446px]:pl-3 pl-20 font-serif ">
         <div className="flex w-[100%] flex-col ">
-          <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
-          <div className="w-[90%] p-1.5 bg-[#c4c2c2]  flex  flex-col items-center justify-center rounded-[50px] shadow-2xl mt-10 ">
-            <div 
-              className="cart-items  w-[100%] rounded-[45px] shadow-2xl bg-[#eae8e8] p-5"
-           
-            >
+          <div className="w-[90%] max-[446px]:w-[97%] p-1.5 bg-[#c4c2c2]  flex  flex-col items-center justify-center rounded-[50px] shadow-2xl mt-10 ">
+            <div className="cart-items  w-[100%] rounded-[45px] shadow-2xl bg-[#eae8e8] p-5">
               {cartItems.map((cartItem) => {
                 const quantity =
                   quantities[cartItem.id] ?? cartItem.quantity ?? 1;
                 return (
                   <Fragment key={cartItem.id}>
-                    <div className="flex gap-6 justify-between    p-2.5 ">
+                    <div className="flex gap-6 justify-between p-2.5 ">
                       <div className="flex ">
                         <div className="flex gap-2">
-                          <div className="relative overflow-hidden w-[150px]  h-[120px]">
+                          <div className="relative overflow-hidden w-[150px] max-[446px]:w-[120px] max-[446px]:h-[80px] h-[120px]">
                             <Image
                               fill
                               src={cartItem.product.image}
@@ -216,7 +212,10 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                           </div>
 
                           <div className="flex flex-col justify-between ">
-                           <Link href={`/productDetails/${cartItem.product.slug}`}>
+                            <Link
+                              href={`/productDetails/${cartItem.product.slug}`}
+                              className="max-[446px]:text-sm"
+                            >
                               {cartItem.product.name}
                             </Link>
                             <p></p>
@@ -238,7 +237,9 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                           width={18}
                           height={18}
                           className={`cursor-pointer opacity-70 hover:opacity-100 transition mb-2 ${
-                            deletingItems[cartItem.id] ? "opacity-50 cursor-not-allowed" : ""
+                            deletingItems[cartItem.id]
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
                           }`}
                           onClick={() => handleDeleteClick(cartItem.id)}
                         />
@@ -247,37 +248,40 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                         <div className="flex items-center gap-2 rounded-full border px-3 py-1">
                           <Image
                             alt="minus"
-                            className={'cursor-pointer opacity-70 hover:opacity-100 transition '}
+                            className={
+                              "cursor-pointer opacity-70 hover:opacity-100 transition "
+                            }
                             width={14}
                             height={14}
                             src="/icons/Minus.svg"
-                            onClick={() =>
-                              decrement(cartItem.id)
-                            }
+                            onClick={() => decrement(cartItem.id)}
                           />
 
                           <span className="min-w-[20px] text-center text-sm font-medium">
-                            { quantity}
+                            {quantity}
                           </span>
 
                           <Image
                             alt="plus"
-                            className={'cursor-pointer opacity-70 hover:opacity-100 transition'}
+                            className={
+                              "cursor-pointer opacity-70 hover:opacity-100 transition"
+                            }
                             width={14}
                             height={14}
                             src="/icons/Plus.svg"
-                            onClick={() =>
-                              increment(cartItem.id)
-                            }
+                            onClick={() => increment(cartItem.id)}
                           />
                         </div>
                       </div>
                     </div>
-                    <hr className="w-[100%] border-gray-400 mb-7"  />
+                    <hr className="w-[100%] border-gray-400 mb-7" />
                   </Fragment>
                 );
               })}
-              <Link href='/checkout' className="mt-20 p-4 font-semibold rounded-full text-white bg-[#0a1429] cursor-pointer hover:bg-[#172c58]">
+              <Link
+                href="/checkout"
+                className="mt-20 p-4 font-semibold rounded-full text-white bg-[#0a1429] cursor-pointer hover:bg-[#172c58]"
+              >
                 Check Out
               </Link>
             </div>

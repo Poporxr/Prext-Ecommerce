@@ -44,7 +44,7 @@
   @apply fixed top-4 left-1/2 -translate-x-1/2 z-50
   flex items-center justify-between
   w-[92%] max-w-6xl
-  px-6 py-3
+  px-6 py-3 max-[446px]:p-2
   rounded-full
   bg-white/85 backdrop-blur-xl
   shadow-[0_8px_30px_rgba(0,0,0,0.06)];

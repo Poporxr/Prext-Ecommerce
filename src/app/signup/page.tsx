@@ -54,8 +54,8 @@ export const Signup = () => {
   };
 
  return (
-   <section className="flex  w-full h-screen font-serif items-center justify-center bg-[#353c53]">
-     <div className="w-[60%] h-[90%] relative left-[-50]">
+   <section className="flex  w-full h-screen font-serif items-center justify-center bg-[#353c53] max-[446px]:items-start">
+     <div className="w-[60%] h-[90%] max-[446px]:hidden relative left-[-50]">
        <Image
          src="/icons/auth-logo.png"
          alt="Hero Image"
@@ -63,7 +63,7 @@ export const Signup = () => {
          className="object-cover rounded-l-4xl h-[70%]"
        />
      </div>
-     <Card className="w-[33%] h-[90%] absolute right-68 rounded-4xl">
+     <Card className="w-[33%] h-[90%] absolute max-[446px]:w-[90%] right-68 rounded-4xl max-[446px]:right-5 max-[446px]:h-[60%] max-[446px]:mt-25">
        <CardHeader>
          <CardTitle>
            <Image
