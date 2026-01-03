@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+/* import { NextRequest, NextResponse } from "next/server";
 import { adminDB } from "@/lib/firebase/firebaseAdmins";
 
 
@@ -49,4 +49,4 @@ export async function GET (request: NextRequest) {
   } catch (error) {
     
   }
-}
+} */
