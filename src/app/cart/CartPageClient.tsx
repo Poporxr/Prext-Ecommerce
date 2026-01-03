@@ -227,7 +227,7 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                       <div className="flex flex-col items-end justify-between py-1.5 px-2">
                         {/* delete icon */}
                         <Image
-                          src="/images/icons/delete.svg"
+                          src="/images/delete.svg"
                           alt="Remove item"
                           width={18}
                           height={18}
@@ -248,7 +248,7 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                             }
                             width={14}
                             height={14}
-                            src="/images/icons/Minus.svg"
+                            src="/images/Minus.svg"
                             onClick={() => decrement(cartItem.id)}
                           />
 
@@ -263,7 +263,7 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                             }
                             width={14}
                             height={14}
-                            src="/images/icons/Plus.svg"
+                            src="/images/Plus.svg"
                             onClick={() => increment(cartItem.id)}
                           />
                         </div>

@@ -145,7 +145,7 @@ export default function ProductDetailsClient({ product }: Props) {
               {/* Quantity */}
               <div className="flex items-center gap-4 rounded-full border border-gray-300 px-5 py-2">
                 <Image
-                  src="/images/icons/Minus.svg"
+                  src="/images/Minus.svg"
                   alt="Decrease"
                   width={14}
                   height={14}
@@ -158,7 +158,7 @@ export default function ProductDetailsClient({ product }: Props) {
                 </span>
 
                 <Image
-                  src="/images/icons/Plus.svg"
+                  src="/images/Plus.svg"
                   alt="Increase"
                   width={14}
                   height={14}

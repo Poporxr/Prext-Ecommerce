@@ -53,7 +53,7 @@ export const Login = () => {
     <section className="flex  w-full h-screen font-serif items-center justify-center bg-[#353c53] max-[446px]:items-start">
       <div className="w-[60%] h-[90%] relative left-[-50]  max-[446px]:hidden">
         <Image
-          src="/images/icons/auth-logo.png"
+          src="/images/auth-logo.png"
           alt="Hero Image"
           fill
           className="object-cover rounded-l-4xl h-[70%]"
@@ -63,7 +63,7 @@ export const Login = () => {
         <CardHeader>
           <CardTitle>
             <Image
-              src="/images/icons/prext-logo.png"
+              src="/images/prext-logo.png"
               alt="logo"
               width={100}
               height={100}

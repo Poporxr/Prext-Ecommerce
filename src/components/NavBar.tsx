@@ -25,7 +25,7 @@ const NavBar = () => {
       <div className="flex gap-1 bg-[#a8a5a5f1] items-center justify-between p-1.5 rounded-3xl max-[446px]:rounded-4xl  max-[600px]:w-full">
         <Link href={""} className="nav-links lg:hidden md:hidden">
           <Image
-            src={"/images/icons/hamburger.svg"}
+            src={"/images/hamburger.svg"}
             alt="hmburger"
             width={40}
             height={40}
@@ -34,7 +34,7 @@ const NavBar = () => {
 
         <Link className="nav-links lg:hidden md:hidden " href={"/cart"}>
           <Image
-            src="/images/icons/cart-icon.svg"
+            src="/images/cart-icon.svg"
             alt="Cart"
             width={30}
             height={30}
@@ -50,7 +50,7 @@ const NavBar = () => {
           href={"/cart"}
         >
           <Image
-            src="/images/icons/cart-icon.svg"
+            src="/images/cart-icon.svg"
             alt="Cart"
             width={20}
             height={20}
@@ -63,7 +63,7 @@ const NavBar = () => {
           href={"/profile"}
         >
           <Image
-            src="/images/icons/user-profile.svg"
+            src="/images/user-profile.svg"
             alt="Cart"
             width={20}
             height={20}
