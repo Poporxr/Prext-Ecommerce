@@ -34,10 +34,13 @@ interface OrderRouteParams {
 // GET /api/orders/:id
 export async function GET(
   _request: NextRequest,
-  { params }: { params: OrderRouteParams }
+  { params }: { params: Promise<OrderRouteParams> | OrderRouteParams }
 ) {
+  // Handle async params (Next.js 15+)
+  const resolvedParams = await Promise.resolve(params);
+  
   try {
-    const ref = doc(connectDB, "orders", params.id);
+    const ref = doc(connectDB, "orders", resolvedParams.id);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
@@ -48,7 +51,7 @@ export async function GET(
 
     return NextResponse.json({ id: snap.id, ...data }, { status: 200 });
   } catch (error) {
-    console.error(`GET /api/orders/${params.id} error`, error);
+    console.error(`GET /api/orders/${resolvedParams.id} error`, error);
     return NextResponse.json(
       { error: "Failed to fetch order" },
       { status: 500 }
@@ -61,8 +64,11 @@ export async function GET(
 // the total price is recomputed based on current product prices.
 export async function PUT(
   request: NextRequest,
-  { params }: { params: OrderRouteParams }
+  { params }: { params: Promise<OrderRouteParams> | OrderRouteParams }
 ) {
+  // Handle async params (Next.js 15+)
+  const resolvedParams = await Promise.resolve(params);
+  
   try {
     const body = (await request.json()) as Partial<OrderDoc> | null;
 
@@ -76,7 +82,7 @@ export async function PUT(
       );
     }
 
-    const ref = doc(connectDB, "orders", params.id);
+    const ref = doc(connectDB, "orders", resolvedParams.id);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
@@ -133,7 +139,7 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    console.error(`PUT /api/orders/${params.id} error`, error);
+    console.error(`PUT /api/orders/${resolvedParams.id} error`, error);
     return NextResponse.json(
       { error: "Failed to update order" },
       { status: 500 }
@@ -144,10 +150,13 @@ export async function PUT(
 // DELETE /api/orders/:id
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: OrderRouteParams }
+  { params }: { params: Promise<OrderRouteParams> | OrderRouteParams }
 ) {
+  // Handle async params (Next.js 15+)
+  const resolvedParams = await Promise.resolve(params);
+  
   try {
-    const ref = doc(connectDB, "orders", params.id);
+    const ref = doc(connectDB, "orders", resolvedParams.id);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
@@ -163,7 +172,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
-    console.error(`DELETE /api/orders/${params.id} error`, error);
+    console.error(`DELETE /api/orders/${resolvedParams.id} error`, error);
     return NextResponse.json(
       { error: "Failed to delete order" },
       { status: 500 }
