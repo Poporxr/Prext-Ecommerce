@@ -109,7 +109,7 @@ export async function GET(
 
     const data = docSnap.data() as ProductDoc;
 
-    return NextResponse.json({ id: docSnap.id, ...data }, { status: 200 });
+    return NextResponse.json({ firestoreId: docSnap.id, ...data }, { status: 200 });
   } catch (error) {
     const resolvedParams = params instanceof Promise ? await params : params;
     console.error(`GET /api/products/${resolvedParams?.id} error`, error);
@@ -210,7 +210,7 @@ export async function PUT(
     const updated = updatedSnap.data() as ProductDoc;
 
     return NextResponse.json(
-      { id: updatedSnap.id, ...updated },
+      { firestoreId: updatedSnap.id, ...updated },
       { status: 200 }
     );
   } catch (error) {
@@ -289,7 +289,7 @@ export async function DELETE(
     await docSnap.ref.delete();
 
     return NextResponse.json(
-      { message: "Product deleted", product: { id: docSnap.id, ...data } },
+      { message: "Product deleted", product: { firestoreId: docSnap.id, ...data } },
       { status: 200 }
     );
   } catch (error) {
