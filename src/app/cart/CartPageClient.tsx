@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Fragment, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase/firebase";
-import { formatMoney } from "../../../utils/money";
+import { formatMoney } from "@/utils/money";
 //import calculateCartTotals from "./calculateTotal";
 import Link from "next/link";
 import {

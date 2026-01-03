@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase/firebase";
-import { formatMoney } from "../../../../utils/money";
+import { formatMoney } from "@/utils/money";
 import type { Product } from "./page";
 import { showToast } from "../../../components/Toast";
 import CartNavbar from "./NavBar";
