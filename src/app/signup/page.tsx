@@ -6,7 +6,6 @@ import { auth } from "@/lib/firebase/firebase";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -50,85 +49,100 @@ export const Signup = () => {
   };
 
   return (
-    <section className="flex  w-full h-screen font-serif items-center justify-center bg-[#353c53] max-[446px]:items-start">
-      <div className="w-[60%] h-[90%] max-[446px]:hidden relative left-[-50]">
-        <Image
-          src="/images/auth-logo.png"
-          alt="Hero Image"
-          fill
-          className="object-cover rounded-l-4xl h-[70%]"
-        />
-      </div>
-      <Card className="w-[33%] h-[90%] absolute max-[446px]:w-[90%] right-68 rounded-4xl max-[446px]:right-5 max-[446px]:h-[60%] max-[446px]:mt-25">
-        <CardHeader>
-          <CardTitle>
-            <Image
-              src="/images/prext-logo.png"
-              alt="logo"
-              width={100}
-              height={100}
-            />
-          </CardTitle>
-          <CardDescription></CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                  value={email}
-                  className="rounded-[30px]"
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                  }}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  className="rounded-[30px]"
-                  required
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                  }}
-                />
-              </div>
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-            </div>
-            <CardFooter className="flex-col gap-2 mt-19">
-              <Button
-                type="submit"
-                className="w-full rounded-[30px] cursor-pointer"
-              >
-                {loading ? "Signing in..." : "Sign in"}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full rounded-[30px] cursor-pointer"
-                disabled={loading}
-              >
-                Sign Up with Google
-              </Button>
-              <CardAction className="flex items-center justify-center gap-1 pl-4 mt-[10%]">
-                <p className="text-[#8e8d8d] text-sm">
-                  Already have an account?
-                </p>
-                <Button variant="link" onClick={goToLogin}>
-                  Log In
+    <section className="min-h-screen w-full bg-[#353c53] font-serif flex items-center justify-center px-2">
+      <div className="grid w-full max-w-6xl grid-cols-1 md:grid-cols-2 bg-white backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden">
+        {/* LEFT: Brand / Image */}
+        <div className="relative hidden md:block rounded-2xl">
+          <Image
+            src="/images/auth-logo.png"
+            alt="Brand visual"
+            fill
+            className="object-cover "
+            priority
+          />
+          {/* subtle overlay */}
+          <div className="absolute inset-0 bg-black/10" />
+        </div>
+
+        {/* RIGHT: Auth Card */}
+        <div className="flex items-center justify-center py-12 max-[446px]:py-4 px-6 max-[440px]:px-2">
+          <Card className="w-full max-w-md border-none shadow-none bg-transparent">
+            <CardHeader className="items-center text-center gap-2">
+              <Image
+                src="/images/prext-logo.png"
+                alt="Prext logo"
+                width={90}
+                height={90}
+              />
+              <CardTitle className="text-2xl font-semibold">
+                Welcome to Prext
+              </CardTitle>
+              <CardDescription className="text-gray-500">
+                Sign up to continue shopping
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    required
+                    value={email}
+                    className="rounded-full h-11"
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={password}
+                    className="rounded-full h-11"
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+
+                {error && (
+                  <p className="text-red-500 text-sm text-center">{error}</p>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full rounded-full h-11 text-sm font-medium"
+                >
+                  {loading ? "Signing up…" : "Sign up"}
                 </Button>
-              </CardAction>
+
+                <Button
+                  variant="outline"
+                  type="button"
+                  disabled={loading}
+                  className="w-full rounded-full h-11 text-sm"
+                >
+                  Continue with Google
+                </Button>
+              </form>
+            </CardContent>
+
+            <CardFooter className="justify-center pt-6">
+              <p className="text-sm text-gray-500">
+                Already have an account?
+                <Button variant="link" onClick={goToLogin} className="pl-1">
+                  Log in
+                </Button>
+              </p>
             </CardFooter>
-          </form>
-        </CardContent>
-      </Card>
+          </Card>
+        </div>
+      </div>
     </section>
   );
 };
