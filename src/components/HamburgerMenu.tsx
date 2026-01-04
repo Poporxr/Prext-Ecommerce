@@ -18,7 +18,7 @@ export default function HamburgerMenu() {
     }, []);
 
   return (
-    <div className="relative w-full" ref={ref}>
+    <div className="relative w-full lg:hidden md:hidden" ref={ref}>
       {/* Hamburger Button */}
       <button
         onClick={() => setOpen(!open)}

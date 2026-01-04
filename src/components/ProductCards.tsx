@@ -18,6 +18,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
     }))
   );
 
+
   const [addingItems, setAddingItems] = useState<Record<number, boolean>>({});
   const [errors, setErrors] = useState<Record<number, string | null>>({});
 
@@ -102,7 +103,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
           <Link
             href={`/productDetails/${product.slug}`}
             className="
-          absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full bg-white/90 p-2 shadow
+          absolute top-3 right-3 z-10 rounded-full bg-white/90 p-2 shadow
         "
           >
             <Image

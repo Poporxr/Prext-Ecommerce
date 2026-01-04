@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase/firebase";
 import CartPageClient from "./CartPageClient";
 import { CartItems } from "./CartPageClient";
+import Loading from "../loading";
 
 const Page = () => {
   const router = useRouter();
@@ -69,12 +70,7 @@ const Page = () => {
 
   if (loading) {
     return (
-      <div className="mt-20 pl-20 font-serif">
-        <div className="flex w-[100%] flex-col">
-          <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
-          <p className="text-gray-600">Loading your cart...</p>
-        </div>
-      </div>
+      <Loading />
     );
   }
 
