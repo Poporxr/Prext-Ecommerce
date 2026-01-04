@@ -17,6 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import Loading from "../loading";
 
 interface SizesShape {
   small: "S";
@@ -163,6 +164,49 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
     }));
   };
 
+  const paymentSummary = async () => {
+    try {
+      <Loading />
+      const user = auth.currentUser;
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      const firebaseToken = await user.getIdToken();
+      const cartId = cartItems.length > 0 ? cartItems[0].userId : null;
+
+      if (!cartId) {
+        alert("Cart is empty");
+        return;
+      }
+
+      const response = await fetch(`/api/checkout/summary/${cartId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${firebaseToken}`,
+        },
+        body: JSON.stringify({
+          items: cartItems.map((item) => ({
+            productId: item.productId,
+            quantity: quantities[item.id] ?? item.quantity,
+          })),
+        }),
+      });
+
+      const result = await response.json();
+      console.log(result)
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to get payment summary");
+      }
+      router.push(`/checkout/${cartId}`)
+    } catch (err) {
+      console.error("Error getting payment summary:", err);
+      alert(err instanceof Error ? err.message : "Failed to get payment summary");
+    }
+  };
+
   return (
     <>
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -273,12 +317,12 @@ const CartPageClient = ({ cartItems, setCartItems }: Props) => {
                   </Fragment>
                 );
               })}
-              <Link
-                href="/checkout"
+              <button
+                onClick={()=>{paymentSummary()}}
                 className="mt-20 p-4 font-semibold rounded-full text-white bg-[#0a1429] cursor-pointer hover:bg-[#172c58]"
               >
                 Check Out
-              </Link>
+              </button>
             </div>
           </div>
         </div>
