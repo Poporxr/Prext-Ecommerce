@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import HamburgerMenu from "./HamburgerMenu";
 
 const NavBar = () => {
   return (
@@ -23,14 +24,7 @@ const NavBar = () => {
       </div>
 
       <div className="flex gap-1 bg-[#a8a5a5f1] items-center justify-between p-1.5 rounded-3xl max-[446px]:rounded-4xl  max-[600px]:w-full">
-        <Link href={""} className="nav-links lg:hidden md:hidden">
-          <Image
-            src={"/images/hamburger.svg"}
-            alt="hmburger"
-            width={40}
-            height={40}
-          />
-        </Link>
+        <HamburgerMenu />
 
         <Link className="nav-links lg:hidden md:hidden " href={"/cart"}>
           <Image
