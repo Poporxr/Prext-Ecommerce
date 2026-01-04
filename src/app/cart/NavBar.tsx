@@ -4,13 +4,16 @@ const CartNavBar =  () => {
   return (
     <>
       <nav className="cart-nav font-serif">
-        <Link href="/" className="cart-back max-[446px]:text-sm">
-          ← Continue shopping
+        {/* Back */}
+        <Link href="/" className="cart-back">
+          ← Back
         </Link>
 
-        <h2 className="cart-title">Your Cart</h2>
+        {/* Title */}
+        <h2 className="cart-title">Cart</h2>
 
-        <Link href="/signin" className="cart-signin max-[446px]:hidden">
+        {/* Right action */}
+        <Link href="/signin" className="cart-signin">
           Sign in
         </Link>
       </nav>

@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/useAuth";
 import { useParams } from "next/navigation";
 import { formatMoney } from "@/utils/money";
 import Loading from "@/app/loading";
+import CheckoutNav from "./CheckoutNav";
 
 interface SummaryItem {
   productId: string;
@@ -103,43 +104,64 @@ const CheckoutPage = () => {
   if (!summary) return null;
 
   return (
-    <div className="order-summary w-[95%] m-auto p-1.5 bg-[#c4c2c2] rounded-[50px] shadow-2xl mt-10 flex h-[400px]">
-      <div className="w-[100%] h-[100%] bg-[#eae8e8] rounded-[45px] p-5 flex flex-col  shadow-2xl">
-        <h2 className="font-bold text-lg mb-7 text-center">Payment Summary</h2>
-        <div className="flex font-semibold justify-between mb-3">
-          <span>Subtotal</span>
-          <span className="font-bold">
-            {formatMoney({ priceCents: summary.subtotalCents })}
-          </span>
+    <>
+      <CheckoutNav />
+      <div className="pt-20 pb-10 font-serif max-w-6xl mx-auto px-6">
+        <div className="grid grid-cols-3 gap-10 max-[900px]:grid-cols-1">
+
+
+          {/* RIGHT: summary */}
+          <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-6">
+            <h3 className="text-lg font-semibold mb-6 text-center">
+              Payment Summary
+            </h3>
+
+            <div className="space-y-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Subtotal</span>
+                <span className="font-medium">
+                  {formatMoney({ priceCents: summary.subtotalCents })}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">Shipping</span>
+                <span className="font-medium">
+                  {formatMoney({ priceCents: summary.shippingCents })}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">
+                  Discount (-{summary.discount.percent}%)
+                </span>
+                <span className="font-medium text-green-600">
+                  -{formatMoney({ priceCents: summary.discount.amountCents })}
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span className="text-gray-500">Delivery Fee</span>
+                <span className="font-medium">
+                  {formatMoney({ priceCents: summary.deliveryFeeCents })}
+                </span>
+              </div>
+
+              <hr className="my-4" />
+
+              <div className="flex justify-between text-base font-semibold">
+                <span>Total</span>
+                <span>{formatMoney({ priceCents: summary.totalCents })}</span>
+              </div>
+            </div>
+
+            <button className="mt-6 w-full rounded-full bg-black text-white py-3 font-medium hover:bg-gray-800 transition">
+              Pay & Checkout
+            </button>
+          </div>
         </div>
-        <div className="flex font-semibold justify-between mb-3">
-          <span>Shipping</span>
-          <span className="font-bold">
-            {formatMoney({priceCents: summary.shippingCents})}
-          </span>
-        </div>
-        <div className="flex font-semibold justify-between mb-3">
-          <span>Discount(-{summary.discount.percent}%)</span>
-          <span className="font-bold">
-            -{formatMoney({priceCents: summary.discount.amountCents})}
-          </span>
-        </div>
-        <div className="flex font-semibold justify-between mb-10">
-          <span>Delivery Fee</span>
-          <span className="font-bold">
-            {formatMoney({priceCents: summary.deliveryFeeCents})}
-          </span>
-        </div>
-        <hr />
-        <div className="flex justify-between font-bold text-lg mt-4">
-          <span>Total</span>
-          <span>{formatMoney({ priceCents: summary.totalCents })}</span>
-        </div>
-        <button className="bg-[#000] text-white py-2 px-4 rounded-[20px] mt-[10%] cursor-pointer hover:bg-gray-800 transition-colors">
-          Pay and Checkout
-        </button>
       </div>
-    </div>
+    </>
   );
 };
 
