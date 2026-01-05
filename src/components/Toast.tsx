@@ -22,7 +22,7 @@ export function Toast({ message, isVisible, onClose }: ToastProps) {
 
   return (
     <div
-      className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2"
+      className="fixed top-4 right-4 z-100 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2"
       style={{
         animation: "slideIn 0.3s ease-out",
       }}

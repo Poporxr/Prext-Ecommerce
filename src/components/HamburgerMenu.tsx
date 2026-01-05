@@ -35,13 +35,13 @@ export default function HamburgerMenu() {
 
       {/* Dropdown Menu */}
       {open && (
-        <div className="absolute mt-2.5 w-[135%] rounded-[20px] bg-white shadow-lg border">
+        <div className="absolute mt-2.5 w-[132%] rounded-[20px] bg-white shadow-lg border">
           <Link
-            href="/"
+            href="/login"
             onClick={() => setOpen(false)}
             className="block px-4 py-2 hover:bg-gray-100"
           >
-            Home
+            Login 
           </Link>
           <Link
             href="/odrers"

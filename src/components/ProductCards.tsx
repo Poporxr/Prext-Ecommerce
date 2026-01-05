@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase/firebase";
 import { ProductsCardsprops, Product } from "@/app/page";
-import { showToast } from "./Toast";
+import { showToast } from "@/components/Toast";
 
 const ProductCard = ({ products }: ProductsCardsprops) => {
   const router = useRouter();

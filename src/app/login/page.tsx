@@ -118,7 +118,7 @@ export const Login = () => {
                   disabled={loading}
                   className="w-full rounded-full h-11 text-sm font-medium"
                 >
-                  {loading ? "Logging in…" : "Login in"}
+                  {loading ? "Logging in…" : "Log in"}
                 </Button>
 
                 <Button
