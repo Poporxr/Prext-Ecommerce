@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebase/firebase";
+import { useAuth } from "@/lib/useAuth";
 import CartPageClient from "./CartPageClient";
 import { CartItems } from "./CartPageClient";
 import Loading from "../loading";
@@ -12,6 +12,7 @@ const Page = () => {
   const [cartItems, setCartItems] = useState<CartItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+    const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -19,7 +20,7 @@ const Page = () => {
       setError(null);
 
       try {
-        const user = auth.currentUser;
+        if (authLoading) return;
         if (!user) {
           // User not authenticated - redirect to signup
           router.push("/signup");
@@ -66,7 +67,7 @@ const Page = () => {
     };
 
     fetchCart();
-  }, [router]);
+  }, [router, user, authLoading]);
 
   if (loading) {
     return (

@@ -18,11 +18,11 @@ export default function HamburgerMenu() {
     }, []);
 
   return (
-    <div className="relative w-full lg:hidden md:hidden" ref={ref}>
+    <div className="relative w-full lg:hidden " ref={ref}>
       {/* Hamburger Button */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex md:hidden lg:hidden p-1 "
+        className="flex  lg:hidden p-1 "
         aria-label="Toggle menu"
       >
           <Image
@@ -35,7 +35,7 @@ export default function HamburgerMenu() {
 
       {/* Dropdown Menu */}
       {open && (
-        <div className="absolute mt-2.5 w-[132%] rounded-[20px] bg-white shadow-lg border">
+        <div className="absolute mt-2.5 w-[98%] rounded-[20px] bg-white shadow-lg border">
           <Link
             href="/login"
             onClick={() => setOpen(false)}

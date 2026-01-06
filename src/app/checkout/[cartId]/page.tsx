@@ -106,7 +106,7 @@ const CheckoutPage = () => {
   return (
     <>
       <CheckoutNav />
-      <div className="pt-20 pb-10 font-serif max-w-6xl mx-auto px-6">
+      <div className="pt-20 pb-10 font-serif mx-auto px-6">
         <div className="grid grid-cols-3 gap-10 max-[900px]:grid-cols-1">
 
 

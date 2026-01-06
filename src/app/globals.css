@@ -9,7 +9,7 @@
   }
 
   .nav-bar {
-    @apply fixed top-2 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-between 
+    @apply top-2 left-1/2 transform -translate-x-1/2 z-50 flex items-center justify-between 
     bg-white/90 backdrop-blur-md shadow-lg  rounded-[30px];
   }
 
