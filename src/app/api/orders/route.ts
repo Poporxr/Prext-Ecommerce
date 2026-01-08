@@ -1,239 +1,152 @@
-// src/app/api/products/route.ts
-// Firestore + Cloud Storage handlers for `/api/products`.
-// - GET    /api/products      -> list all products
-// - POST   /api/products      -> create a new product with image upload
-
-import { NextRequest, NextResponse } from "next/server";
-import { randomUUID } from "crypto";
+import { NextResponse } from "next/server";
 import { adminDB } from "@/lib/firebase/firebaseAdmins";
-import cloudinary from "@/lib/cloudinary";
 
-// Ensure Node.js runtime for Admin SDK and Cloudinary.
-export const runtime = "nodejs";
-
-interface Sizes {
-  small: "S";
-  medium: "M";
-  large: "L";
-  xl: "XL";
-  xxl: "XXL";
-  defaultSize: "S" | "M" | "L" | "XL" | "XXL";
-}
-
-// Firestore product document shape (matches your example + timestamps).
-interface ProductDoc {
-  id: number; // numeric product id (separate from Firestore doc id)
-  image: string; // image URL from Storage
-  name: string;
-  slug: string;
-  description: string;
-  sizes: Sizes;
-  priceCents: number;
+interface CartItem {
+  productId: string;
   quantity: number;
-  createdAt: string;
-  updatedAt: string;
-  [key: string]: unknown;
+  priceCents: number;
+  userId: string;
 }
 
-// GET /api/products
-export async function GET(_request: NextRequest) {
-  try {
-    const snapshot = await adminDB.collection("products").get();
+const DISCOUNT_PERCENT = 10;
+const SHIPPING_THRESHOLD_CENTS = 10000; // $100
+const SHIPPING_LOW_CENTS = 3000; // $30
+const SHIPPING_HIGH_CENTS = 1000; // $10
+const DELIVERY_FEE_CENTS = 1500; // $15
 
-    const products = snapshot.docs.map((docSnap) => {
-      const data = docSnap.data() as ProductDoc;
-      return {
-        firestoreId: docSnap.id,
-        ...data,
-      };
-    });
+export async function POST(req: Request) {
+  const { reference, userId } = await req.json();
 
-    return NextResponse.json(products, { status: 200 });
-  } catch (error) {
-    console.error("GET /api/products error", error);
+  if (!reference || !userId) {
     return NextResponse.json(
-      { error: "Failed to fetch products" },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/products
-// Expects multipart/form-data:
-// - name: string
-// - description: string
-// - priceCents OR price: number
-// - slug: optional string (auto-generated if missing)
-// - image: File
-export async function POST(request: NextRequest) {
-  // 1. Parse and validate form data
-  let name: string;
-  let description: string;
-  let slug: string;
-  let priceCents: number;
-  let imageFile: File;
-
-  try {
-    const formData = await request.formData();
-
-    const rawName = formData.get("name");
-    const rawDescription = formData.get("description");
-    const rawSlug = formData.get("slug");
-    const rawPrice = formData.get("priceCents") ?? formData.get("price");
-    const rawImage = formData.get("image");
-
-    // name
-    if (typeof rawName !== "string" || !rawName.trim()) {
-      return NextResponse.json(
-        { error: "Field 'name' is required and must be a non-empty string." },
-        { status: 400 }
-      );
-    }
-    name = rawName.trim();
-
-    // description
-    if (typeof rawDescription !== "string" || !rawDescription.trim()) {
-      return NextResponse.json(
-        {
-          error:
-            "Field 'description' is required and must be a non-empty string.",
-        },
-        { status: 400 }
-      );
-    }
-    description = rawDescription.trim();
-
-    // price
-    if (rawPrice === null) {
-      return NextResponse.json(
-        {
-          error:
-            "Either 'priceCents' or 'price' is required and must be a positive number.",
-        },
-        { status: 400 }
-      );
-    }
-    const parsedPrice = Number(rawPrice);
-    if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
-      return NextResponse.json(
-        { error: "'priceCents' / 'price' must be a positive number." },
-        { status: 400 }
-      );
-    }
-    priceCents = parsedPrice;
-
-    // slug (optional)
-    if (typeof rawSlug === "string" && rawSlug.trim()) {
-      slug = rawSlug.trim();
-    } else {
-      const base = name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      const suffix = randomUUID().slice(0, 8);
-      slug = `${base}-${suffix}`;
-    }
-
-    // image
-    if (!(rawImage instanceof File)) {
-      return NextResponse.json(
-        { error: "Field 'image' is required and must be a file." },
-        { status: 400 }
-      );
-    }
-    imageFile = rawImage;
-  } catch (error) {
-    console.error("Failed to parse form data in POST /api/products", error);
-    return NextResponse.json(
-      {
-        error:
-          "Invalid form data. Ensure you are sending multipart/form-data with name, description, price, and image.",
-      },
+      { success: false, message: "Missing reference or userId" },
       { status: 400 }
     );
   }
 
-  // 2. Upload image to Cloudinary with a unique filename
-  let imageUrl: string;
-  try {
-    const safeOriginalName = imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    const uniqueName = `${Date.now()}-${randomUUID()}-${safeOriginalName}`;
-
-    const arrayBuffer = await imageFile.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const uploadResult = await new Promise<any>((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          folder: "products",
-          public_id: uniqueName,
-          resource_type: "image",
-        },
-        (error, result) => {
-          if (error || !result) return reject(error);
-          resolve(result);
-        }
-      );
-
-      stream.end(buffer);
-    });
-
-    imageUrl = uploadResult.secure_url;
-  } catch (error) {
-    console.error("Cloudinary upload failed in POST /api/products", error);
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-
-    return NextResponse.json(
-      {
-        error: "Failed to upload product image.",
-        details: errorMessage,
+  // 1️⃣ Verify Paystack payment
+  const res = await fetch(
+    `https://api.paystack.co/transaction/verify/${reference}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
       },
-      { status: 500 }
+    }
+  );
+
+  const data = await res.json();
+
+  if (!data.status || data.data.status !== "success") {
+    return NextResponse.json(
+      { success: false, message: "Payment not verified" },
+      { status: 400 }
     );
   }
 
-  // 3. Save product document in Firestore
-  try {
-    const now = new Date().toISOString();
+  //const amountPaid = data.data.amount; // kobo
 
-    const sizes: Sizes = {
-      small: "S",
-      medium: "M",
-      large: "L",
-      xl: "XL",
-      xxl: "XXL",
-      defaultSize: "M",
-    };
+  // 2️⃣ Get all cart items for this user
+  const cartSnap = await adminDB
+    .collection("cart")
+    .where("userId", "==", userId)
+    .get();
 
-    const numericId = Date.now(); // simple numeric id like your example
-
-    const data: ProductDoc = {
-      id: numericId,
-      image: imageUrl,
-      name,
-      slug,
-      description,
-      sizes,
-      priceCents,
-      quantity: 1,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const docRef = await adminDB.collection("products").add(data);
-
+  if (cartSnap.empty) {
     return NextResponse.json(
-      {
-        firestoreId: docRef.id,
-        ...data,
-      },
-      { status: 201 }
+      { success: false, message: "Cart not found" },
+      { status: 404 }
     );
-  } catch (error) {
-    console.error("Firestore write failed in POST /api/products", error);
+  }
+  // inside POST
+  const items: CartItem[] = cartSnap.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as CartItem), // cast to CartItem
+  }));
+  const subtotalCents = items.reduce(
+    (sum, item) => sum + (item.priceCents || 0) * (item.quantity || 0),
+    0
+  );
+
+  const discountAmountCents = Math.round(
+    subtotalCents * (DISCOUNT_PERCENT / 100)
+  );
+  const discountedSubtotal = subtotalCents - discountAmountCents;
+  const shippingCents =
+    discountedSubtotal < SHIPPING_THRESHOLD_CENTS
+      ? SHIPPING_LOW_CENTS
+      : SHIPPING_HIGH_CENTS;
+
+  // Delivery Fee: Flat $15
+  const deliveryFeeCents = DELIVERY_FEE_CENTS;
+
+  // Final Total
+  const totalCents = discountedSubtotal + shippingCents + deliveryFeeCents;
+  // 3️⃣ Compare amount paid
+  {
+    /*if (amountPaid !== totalCents) {
     return NextResponse.json(
-      { error: "Failed to create product" },
+      { success: false, message: "Paid amount does not match cart total. you will be refunded shortly" },
+      { status: 400 }
+    );
+  }*/
+  }
+
+  // 4️⃣ Create order
+  const orderRef = await adminDB.collection("orders").add({
+    userId,
+    items,
+    subtotalCents,
+    discountedSubtotal,
+    shippingCents,
+    deliveryFeeCents,
+    totalCents,
+    reference,
+    status: "paid",
+    createdAt: new Date(),
+  });
+
+  // 5️⃣ Delete all cart items for this user
+  const batch = adminDB.batch();
+  cartSnap.docs.forEach((doc) => batch.delete(doc.ref));
+  await batch.commit();
+
+  return NextResponse.json({ success: true, orderId: orderRef.id });
+}
+
+
+
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, message: "Missing userId" },
+        { status: 400 }
+      );
+    }
+
+    const snap = await adminDB
+      .collection("orders")
+      .where("userId", "==", userId)
+      .orderBy("createdAt", "desc")
+      .get();
+
+    const orders = snap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    console.error("ORDER GET ERROR:", error);
+    return NextResponse.json(
+      { success: false, message: "Internal server error" },
       { status: 500 }
     );
   }

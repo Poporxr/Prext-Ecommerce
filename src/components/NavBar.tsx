@@ -23,7 +23,7 @@ const NavBar = () => {
         />
       </div>
 
-      <div className="flex gap-1 bg-[#a8a5a5f1] items-center justify-between p-1.5 rounded-3xl max-[446px]:rounded-4xl  max-[600px]:w-full max-[990px]:w-full">
+      <div className="flex gap-1 bg-[#a8a5a5f1] items-center justify-between p-1.5 rounded-3xl max-[446px]:rounded-4xl  max-[600px]:w-full max-[990px]:w-full max-[990px]:rounded-4xl">
         <HamburgerMenu />
 
         <Link className="nav-links lg:hidden  " href={"/cart"}>

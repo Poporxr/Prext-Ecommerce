@@ -25,12 +25,12 @@ export default function HamburgerMenu() {
         className="flex  lg:hidden p-1 "
         aria-label="Toggle menu"
       >
-          <Image
-            src={"/images/hamburger.svg"}
-            alt="hmburger"
-            width={40}
-            height={40}
-          />
+        <Image
+          src={"/images/hamburger.svg"}
+          alt="hmburger"
+          width={40}
+          height={40}
+        />
       </button>
 
       {/* Dropdown Menu */}
@@ -39,23 +39,23 @@ export default function HamburgerMenu() {
           <Link
             href="/login"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 hover:bg-gray-100"
+            className="block px-4 py-2 rounded-3xl hover:bg-gray-100"
           >
-            Login 
+            Login
           </Link>
           <Link
-            href="/odrers"
+            href="/orders"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 hover:bg-gray-100"
+            className="block px-4 py-2 hover:bg-gray-100 rounded-3xl"
           >
             Orders
           </Link>
           <Link
             href="/profile"
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 hover:bg-gray-100"
+            className="block px-4 py-2 rounded-3xl hover:bg-gray-100"
           >
-           Profile
+            Profile
           </Link>
         </div>
       )}

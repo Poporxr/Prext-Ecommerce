@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/useAuth";
 import CartPageClient from "./CartPageClient";
 import { CartItems } from "./CartPageClient";
 import Loading from "../loading";
+import Image from "next/image";
 
 const Page = () => {
   const router = useRouter();
@@ -79,7 +80,7 @@ const Page = () => {
     return (
       <div className="mt-20 pl-20 font-serif">
         <div className="flex w-[100%] flex-col">
-          <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
+          <h3 className="font-semibold text-4xl mb-5">...</h3>
           <p className="text-red-600">Error: {error}</p>
         </div>
       </div>
@@ -88,10 +89,13 @@ const Page = () => {
 
   if (!cartItems || cartItems.length === 0) {
     return (
-      <div className="mt-20 pl-20 font-serif">
-        <div className="flex w-[100%] flex-col">
-          <h3 className="font-semibold text-4xl mb-5">Your Shopping Cart...</h3>
-          <p className="text-gray-600">Your cart is empty</p>
+      <div className="font-serif">
+        <div className="flex h-screen justify-center items-center w-[100%] flex-col">
+          <div className="flex flex-col items-center">
+            <Image src={'/images/empty-cart.svg'} width={70} height={70} alt="empty-cart"/>
+            <p>Your Cart is Empty</p>
+          </div>
+         
         </div>
       </div>
     );
