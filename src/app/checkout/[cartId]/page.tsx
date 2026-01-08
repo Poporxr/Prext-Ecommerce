@@ -6,6 +6,9 @@ import { useParams } from "next/navigation";
 import { formatMoney } from "@/utils/money";
 import Loading from "@/app/loading";
 import CheckoutNav from "./CheckoutNav";
+import PaystackButton from "@/components/PaystackButton";
+
+
 
 interface SummaryItem {
   productId: string;
@@ -33,6 +36,7 @@ const CheckoutPage = () => {
   const params = useParams();
   const cartId = params?.cartId as string;
   const { user, loading: authLoading } = useAuth();
+  
   
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,59 +110,53 @@ const CheckoutPage = () => {
   return (
     <>
       <CheckoutNav />
-      <div className="pt-20 pb-10 font-serif mx-auto px-6">
-        <div className="grid grid-cols-3 gap-10 max-[900px]:grid-cols-1">
+      <div className="pt-20 pb-10 font-serif  px-6">
+        {/* RIGHT: summary */}
+        <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-6 max-w-3xl m-auto">
+          <h3 className="text-lg font-semibold mb-6 text-center">
+            Payment Summary
+          </h3>
 
-
-          {/* RIGHT: summary */}
-          <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-6">
-            <h3 className="text-lg font-semibold mb-6 text-center">
-              Payment Summary
-            </h3>
-
-            <div className="space-y-4 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Subtotal</span>
-                <span className="font-medium">
-                  {formatMoney({ priceCents: summary.subtotalCents })}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">Shipping</span>
-                <span className="font-medium">
-                  {formatMoney({ priceCents: summary.shippingCents })}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">
-                  Discount (-{summary.discount.percent}%)
-                </span>
-                <span className="font-medium text-green-600">
-                  -{formatMoney({ priceCents: summary.discount.amountCents })}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-500">Delivery Fee</span>
-                <span className="font-medium">
-                  {formatMoney({ priceCents: summary.deliveryFeeCents })}
-                </span>
-              </div>
-
-              <hr className="my-4" />
-
-              <div className="flex justify-between text-base font-semibold">
-                <span>Total</span>
-                <span>{formatMoney({ priceCents: summary.totalCents })}</span>
-              </div>
+          <div className="space-y-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-500">Subtotal</span>
+              <span className="font-medium">
+                {formatMoney({ priceCents: summary.subtotalCents })}
+              </span>
             </div>
 
-            <button className="mt-6 w-full rounded-full bg-black text-white py-3 font-medium hover:bg-gray-800 transition">
-              Pay & Checkout
-            </button>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Shipping</span>
+              <span className="font-medium">
+                {formatMoney({ priceCents: summary.shippingCents })}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-gray-500">
+                Discount (-{summary.discount.percent}%)
+              </span>
+              <span className="font-medium text-green-600">
+                -{formatMoney({ priceCents: summary.discount.amountCents })}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="text-gray-500">Delivery Fee</span>
+              <span className="font-medium">
+                {formatMoney({ priceCents: summary.deliveryFeeCents })}
+              </span>
+            </div>
+
+            <hr className="my-4" />
+
+            <div className="flex justify-between text-base font-semibold">
+              <span>Total</span>
+              <span>{formatMoney({ priceCents: summary.totalCents })}</span>
+            </div>
           </div>
+        
+          <PaystackButton email={user.email!} totalCents={summary.totalCents} />
         </div>
       </div>
     </>

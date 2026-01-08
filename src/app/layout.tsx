@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import  {Providers}  from "./providers";
+import Script from "next/script";
 
 
 
@@ -36,6 +37,10 @@ export default function RootLayout({
         className={`${playfair.variable} ${inter.variable} antialiased  bg-[#f1f1f1]`}
       >
         <Providers>{children}</Providers>
+        <Script
+          src="https://js.paystack.co/v1/inline.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

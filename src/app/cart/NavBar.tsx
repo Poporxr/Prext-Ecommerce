@@ -13,9 +13,7 @@ const CartNavBar =  () => {
         <h2 className="cart-title">Cart</h2>
 
         {/* Right action */}
-        <Link href="/signin" className="cart-signin">
-          Sign in
-        </Link>
+        <span className="cart-signin">Secure</span>
       </nav>
     </>
   );
