@@ -7,15 +7,19 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loading from "@/app/loading";
 import OrdersNav from "./OrdersNav";
+import { Order, OrderItem, Product } from "./types";
+
 
 const Page = () => {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<
+    (Product & { quantity: number; orderId: string })[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [orders, setOrders] = useState<any[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
 
   useEffect(() => {
     if (!userId) {
@@ -32,12 +36,13 @@ const Page = () => {
           throw new Error("Failed to fetch orders");
         }
 
-        const data = await res.json();
-        setOrders(data.orders)
+        const data: { success: boolean; orders: Order[] } = await res.json();
+        setOrders(data.orders);
+
 
         // ✅ extract ONLY products from orders
-        const extractedProducts = data.orders.flatMap((order: any) =>
-          order.items.map((item: any) => ({
+        const extractedProducts = data.orders.flatMap((order: Order) =>
+          order.items.map((item: OrderItem) => ({
             ...item.product,
             quantity: item.quantity,
             orderId: order.id,
@@ -91,7 +96,7 @@ const Page = () => {
             </div>
 
             {/* PRODUCTS */}
-            {order.items.map((item) => {
+            {order.items.map((item: OrderItem) => {
               const product = item.product;
 
               return (
