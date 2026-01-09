@@ -1,25 +1,22 @@
 "use client";
 
-import { formatMoney } from "@/utils/money";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+
 import Loading from "@/app/loading";
 import OrdersNav from "./OrdersNav";
-import { Order, OrderItem, Product } from "./types";
-
+import { formatMoney } from "@/utils/money";
+import { Order, OrderItem } from "./types";
 
 const Page = () => {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
 
-  const [products, setProducts] = useState<
-    (Product & { quantity: number; orderId: string })[]
-  >([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [orders, setOrders] = useState<Order[]>([])
 
   useEffect(() => {
     if (!userId) {
@@ -37,19 +34,8 @@ const Page = () => {
         }
 
         const data: { success: boolean; orders: Order[] } = await res.json();
+
         setOrders(data.orders);
-
-
-        // ✅ extract ONLY products from orders
-        const extractedProducts = data.orders.flatMap((order: Order) =>
-          order.items.map((item: OrderItem) => ({
-            ...item.product,
-            quantity: item.quantity,
-            orderId: order.id,
-          }))
-        );
-
-        setProducts(extractedProducts);
       } catch (err) {
         console.error(err);
         setError("Could not load orders");
@@ -67,30 +53,31 @@ const Page = () => {
     return <div className="text-center text-red-500 mt-10">{error}</div>;
   }
 
-  if (products.length === 0) {
+  if (orders.length === 0) {
     return <div className="text-center mt-10">No orders found</div>;
   }
 
   return (
     <>
       <OrdersNav />
-      <main className="grid grid-cols-2 mt-30 max-[446px]:flex flex-col">
+
+      <main className="grid grid-cols-2 mt-30 max-[446px]:flex max-[446px]:flex-col max-[990px]:grid-cols-1">
         {orders.map((order) => (
           <div
             key={order.id}
-            className="orders space-y-2 ml-auto mr-auto bg-white w-[90%] max-[446px]:w-[95%] rounded-2xl py-3 px-3 mb-10 font-serif"
+            className="space-y-3 ml-auto mr-auto bg-white w-[90%] max-[446px]:w-[95%] rounded-2xl py-3 px-3 mb-10 font-serif"
           >
             {/* ORDER HEADER */}
             <div className="flex justify-between">
               <div className="bg-[#f9f9f9] py-2 px-6 border rounded-xl">
-                <p className="text-gray-500">Order Date:</p>
+                <p className="text-gray-500 text-xs">Order Date</p>
                 <h2 className="font-bold text-sm">
                   {new Date(order.createdAt._seconds * 1000).toDateString()}
                 </h2>
               </div>
 
               <div className="bg-[#f9f9f9] py-2 px-6 border rounded-xl">
-                <p className="text-gray-500">Status</p>
+                <p className="text-gray-500 text-xs">Status</p>
                 <h2 className="font-bold capitalize">{order.status}</h2>
               </div>
             </div>
@@ -100,7 +87,7 @@ const Page = () => {
               const product = item.product;
 
               return (
-                <div key={item.id}>
+                <div key={item.productId}>
                   <hr />
                   <div className="flex justify-between gap-4 rounded-2xl hover:bg-[#f4f4f4] transition py-2">
                     <div className="flex gap-4">
@@ -116,13 +103,15 @@ const Page = () => {
                       <div className="flex flex-col justify-between">
                         <Link
                           href={`/productDetails/${product.slug}`}
-                          className="text-sm font-medium cursor-pointer"
+                          className="text-sm font-medium"
                         >
                           {product.name}
                         </Link>
 
                         <span className="text-sm font-semibold">
-                          {formatMoney({ priceCents: product.priceCents })}
+                          {formatMoney({
+                            priceCents: item.priceCents,
+                          })}
                         </span>
 
                         <span className="text-xs text-gray-500">
@@ -135,36 +124,15 @@ const Page = () => {
               );
             })}
 
-            {/* ORDER TOTALS */}
+            {/* ORDER TOTAL */}
             <hr />
-            <div className="mt-4 space-y-2">
-              <div className="flex justify-between">
-                <p className="text-gray-500">Discount:</p>
-                <span className="font-semibold">
-                  {formatMoney({ priceCents: order.discountedSubtotal })}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <p className="text-gray-500">Shipping:</p>
-                <span className="font-semibold">
-                  {formatMoney({ priceCents: order.shippingCents })}
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <p className="text-gray-500">Delivery:</p>
-                <span className="font-semibold">
-                  {formatMoney({ priceCents: order.deliveryFeeCents })}
-                </span>
-              </div>
-
-              <hr />
-
-              <div className="flex justify-between font-bold">
-                <p>Total:</p>
-                <span>{formatMoney({ priceCents: order.totalCents })}</span>
-              </div>
+            <div className="flex justify-between font-bold mt-4">
+              <p>Total</p>
+              <span>
+                {formatMoney({
+                  priceCents: order.totalCents,
+                })}
+              </span>
             </div>
           </div>
         ))}

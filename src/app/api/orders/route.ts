@@ -2,11 +2,81 @@ import { NextResponse } from "next/server";
 import { adminDB } from "@/lib/firebase/firebaseAdmins";
 
 /* -------------------- HELPERS -------------------- */
+/* -------------------- PRODUCT -------------------- */
+
+export interface ProductSizes {
+  small?: string;
+  medium?: string;
+  large?: string;
+  xl?: string;
+  xxl?: string;
+  defaultSize?: string;
+}
+
+export interface Product {
+  id: number;
+  firestoreId: string;
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
+  priceCents: number;
+  quantity: number;
+  sizes?: ProductSizes;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* -------------------- CART -------------------- */
+
+export interface CartItem {
+  id: string;
+  userId: string;
+  productId: string;
+  quantity: number;
+  product: Product;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/* -------------------- ORDER -------------------- */
+
+export interface OrderItem {
+  productId: number;
+  quantity: number;
+  priceCents: number;
+  product: Product;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  reference: string;
+  items: OrderItem[];
+  totalCents: number;
+  status: "paid" | "pending" | "failed";
+  createdAt: {
+    _seconds: number;
+    _nanoseconds: number;
+  };
+}
+
+/* -------------------- API RESPONSES -------------------- */
+
+export interface OrdersResponse {
+  success: boolean;
+  orders: Order[];
+}
+
+export interface OrderPostResponse {
+  success: boolean;
+  order: Order;
+}
 
 // Fetch all cart items for a user
-async function getUserCartItems(userId: string) {
+async function getUserCartItems(userId: string): Promise<CartItem[]> {
   const snap = await adminDB
-    .collection("carts")
+    .collection("cart")
     .where("userId", "==", userId)
     .get();
 
@@ -14,17 +84,17 @@ async function getUserCartItems(userId: string) {
 
   return snap.docs.map((doc) => ({
     id: doc.id,
-    ...doc.data(),
+    ...(doc.data() as Omit<CartItem, "id">),
   }));
 }
 
+
 // Calculate cart total (kobo)
-function calculateCartTotal(cartItems: any[]) {
-  return cartItems.reduce(
-    (sum, item) => sum + item.priceCents * item.quantity,
-    0
-  );
+function calculateCartTotal(items: OrderItem[]): number {
+  return items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
 }
+
+
 
 /* -------------------- POST: CREATE ORDER -------------------- */
 
@@ -39,7 +109,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1️⃣ Verify Paystack payment
+    // 1️⃣ Verify Paystack
     const paystackRes = await fetch(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
@@ -58,8 +128,6 @@ export async function POST(req: Request) {
       );
     }
 
-    //const amountPaid = paystackData.data.amount; // kobo
-
     // 2️⃣ Get cart items
     const cartItems = await getUserCartItems(userId);
     if (!cartItems.length) {
@@ -69,44 +137,42 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3️⃣ Calculate cart total
-    const cartTotal = calculateCartTotal(cartItems);
+    // 3️⃣ Normalize items
+    const orderItems = cartItems.map((item) => ({
+      productId: item.product.id,
+      quantity: item.quantity,
+      priceCents: item.product.priceCents,
+      product: item.product,
+    }));
 
-    /*if (amountPaid !== cartTotal) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Paid amount does not match cart total",
-        },
-        { status: 400 }
-      );
-    }*/
+    // 4️⃣ Calculate total
+    const totalCents = orderItems.reduce(
+      (sum, item) => sum + item.priceCents * item.quantity,
+      0
+    );
 
-    // 4️⃣ Create order
+    // 5️⃣ Create order
     const orderData = {
       userId,
       reference,
-      items: cartItems,
-      totalCents: cartTotal,
+      items: orderItems,
+      totalCents,
       status: "paid",
       createdAt: new Date(),
     };
 
     const orderRef = await adminDB.collection("orders").add(orderData);
 
-    // 5️⃣ Clear user's cart
+    // 6️⃣ Clear cart
     const batch = adminDB.batch();
     cartItems.forEach((item) => {
-      batch.delete(adminDB.collection("carts").doc(item.id));
+      batch.delete(adminDB.collection("cart").doc(item.id));
     });
     await batch.commit();
 
     return NextResponse.json({
       success: true,
-      order: {
-        id: orderRef.id,
-        ...orderData,
-      },
+      order: { id: orderRef.id, ...orderData },
     });
   } catch (error) {
     console.error("ORDER POST ERROR:", error);
@@ -116,6 +182,7 @@ export async function POST(req: Request) {
     );
   }
 }
+
 
 /* -------------------- GET: FETCH ORDERS -------------------- */
 

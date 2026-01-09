@@ -1,20 +1,11 @@
-// types/orders.ts
+// app/orders/types.ts
 
-export interface FirestoreTimestamp {
+export type FirestoreTimestamp = {
   _seconds: number;
   _nanoseconds: number;
-}
+};
 
-export interface ProductSizes {
-  defaultSize: string;
-  small?: string;
-  medium?: string;
-  large?: string;
-  xl?: string;
-  xxl?: string;
-}
-
-export interface Product {
+export type Product = {
   id: number;
   name: string;
   slug: string;
@@ -25,34 +16,22 @@ export interface Product {
   firestoreId: string;
   createdAt: string;
   updatedAt: string;
-  sizes: ProductSizes;
-}
+  sizes: Record<string, string>;
+};
 
-export interface OrderItem {
-  id: string;
-  userId: string;
-  productId: string | number;
+export type OrderItem = {
+  productId: number;
   quantity: number;
-  createdAt: string;
-  updatedAt: string;
+  priceCents: number;
   product: Product;
-}
+};
 
-export interface Order {
+export type Order = {
   id: string;
-  reference: string;
-  status: string;
-  subtotalCents: number;
-  discountedSubtotal: number;
-  shippingCents: number;
-  deliveryFeeCents: number;
-  totalCents: number;
   userId: string;
+  status: string;
+  reference: string;
+  totalCents: number;
   createdAt: FirestoreTimestamp;
   items: OrderItem[];
-}
-
-export interface OrdersApiResponse {
-  success: boolean;
-  orders: Order[];
-}
+};

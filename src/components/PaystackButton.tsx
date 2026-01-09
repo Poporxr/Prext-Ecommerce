@@ -67,7 +67,7 @@ export default function PaystackButton({
 
         (async () => {
           try {
-            const res = await fetch(`/api/orders?userId=${user?.uid}`, {
+            const res = await fetch('/api/orders', {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -89,7 +89,7 @@ export default function PaystackButton({
             console.error(err);
             showToast("❌ Something went wrong while creating the order.");
           }
-          router.push("/orders")
+          router.push(`/orders?userId=${user?.uid}`)
         })();
       },
 
