@@ -67,7 +67,7 @@ export default function PaystackButton({
 
         (async () => {
           try {
-            const res = await fetch("/api/orders", {
+            const res = await fetch(`/api/orders?userId=${user?.uid}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

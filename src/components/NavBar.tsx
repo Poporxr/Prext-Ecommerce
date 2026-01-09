@@ -1,8 +1,12 @@
+"use client"
 import Image from "next/image";
 import Link from "next/link";
 import HamburgerMenu from "./HamburgerMenu";
+import { useAuth } from "@/lib/useAuth";
 
 const NavBar = () => {
+  const {user} = useAuth();
+
   return (
     <nav className="nav-bar w-[90%] fixed  left-0 right-0 p-1 z-50 mx-auto max-w-7xl max-[600px]:flex-col max-[600px]:gap-3 font-serif">
       <div className="flex gap-1 bg-[#a8a5a5f1] max-w-400 items-center justify-center p-1.5 rounded-3xl max-[446px]:hidden max-[990px]:hidden">
@@ -12,7 +16,7 @@ const NavBar = () => {
         <Link className="nav-links" href={"/accessories"}>
           Accessories
         </Link>
-        <Link className="nav-links" href={"/orders"}>
+        <Link className="nav-links" href={`/orders?userId=${user?.uid}`}>
           Orders
         </Link>
       </div>

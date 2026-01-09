@@ -3,10 +3,14 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/lib/useAuth";
+
 
 export default function HamburgerMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const {user} = useAuth();
+  
     useEffect(() => {
       const handler = (e: MouseEvent) => {
         if (ref.current && !ref.current.contains(e.target as Node)) {
@@ -44,7 +48,7 @@ export default function HamburgerMenu() {
             Login
           </Link>
           <Link
-            href="/orders"
+            href={`/orders?userId=${user?.uid}`}
             onClick={() => setOpen(false)}
             className="block px-4 py-2 hover:bg-gray-100 rounded-3xl"
           >
