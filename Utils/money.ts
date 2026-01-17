@@ -1,3 +1,2 @@
-export function formatMoney({priceCents} : {priceCents: number}): string {
-  return `$${(priceCents / 100).toFixed(2)}`;
-}
+export const formatMoney = ({ priceKobo }: { priceKobo: number }) =>
+  `₦${(priceKobo / 100).toLocaleString("en-NG", { minimumFractionDigits: 2 })}`;
