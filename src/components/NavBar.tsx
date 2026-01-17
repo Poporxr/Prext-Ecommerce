@@ -3,9 +3,24 @@ import Image from "next/image";
 import Link from "next/link";
 import HamburgerMenu from "./HamburgerMenu";
 import { useAuth } from "@/lib/useAuth";
+import { auth } from "@/lib/firebase/firebase";
+import { Auth, signOut as firebaseSignOut } from "firebase/auth";
 
 const NavBar = () => {
   const {user} = useAuth();
+  const handleSignOut = () => {
+  firebaseSignOut(auth)
+    .then(() => {
+      // Sign-out successful
+      console.log("User signed out");
+      // Optionally redirect to login page
+      // router.push("/login");
+    })
+    .catch((error) => {
+      console.error("Error signing out:", error);
+    });
+}
+
 
   return (
     <nav className="nav-bar w-[90%] fixed  left-0 right-0 p-1 z-50 mx-auto max-w-7xl max-[600px]:flex-col max-[600px]:gap-3 font-serif">
@@ -42,6 +57,7 @@ const NavBar = () => {
           <Link
           className="nav-links flex gap-1 max-[446px]:hidden max-[990px]:hidden"
           href={"/signup"}
+          onClick={handleSignOut}
         >
           <Image 
             src="/images/sign-out.svg"
@@ -61,7 +77,7 @@ const NavBar = () => {
             width={20}
             height={20}
           />
-          <p>Sign Up</p>
+          <p>Log In</p>
         </Link>}
 
         <Link
@@ -95,3 +111,7 @@ const NavBar = () => {
 };
 
 export default NavBar;
+function signOut(auth: Auth) {
+  throw new Error("Function not implemented.");
+}
+

@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
+  },  
+  experimental: {
+    optimizePackageImports: ["@chakra-ui/react"],
   },
 };
 
