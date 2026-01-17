@@ -23,8 +23,10 @@ const adminApp =
         credential: cert({
           projectId: FIREBASE_PROJECT_ID,
           clientEmail: FIREBASE_CLIENT_EMAIL,
-          // Replace escaped newlines in env var
-          privateKey: FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+          // Handle both escaped and literal newlines in private key
+          privateKey: FIREBASE_PRIVATE_KEY.includes("\\n")
+            ? FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+            : FIREBASE_PRIVATE_KEY,
         }),
       });
 
