@@ -10,14 +10,13 @@ const NavBar = () => {
   return (
     <nav className="nav-bar w-[90%] fixed  left-0 right-0 p-1 z-50 mx-auto max-w-7xl max-[600px]:flex-col max-[600px]:gap-3 font-serif">
       <div className="flex gap-1 bg-[#a8a5a5f1] max-w-400 items-center justify-center p-1.5 rounded-3xl max-[446px]:hidden max-[990px]:hidden">
-        <Link className="nav-links" href={"/"}>
-          Home
+        <Link className="nav-links flex gap-1" href={"/"}>
+          <Image src="/images/home.svg" width={17} height={20} alt="Logo" />
+          <p>Home</p>
         </Link>
-        <Link className="nav-links" href={"/accessories"}>
-          Accessories
-        </Link>
-        <Link className="nav-links" href={`/orders?userId=${user?.uid}`}>
-          Orders
+        <Link className="nav-links flex gap-1" href={`/orders?userId=${user?.uid}`}>
+          <Image src="/images/orders.svg" width={25} height={25} alt="Orders" />
+         <p>Orders</p>
         </Link>
       </div>
       <div className="  max-[446px]:hidden max-[990px]:hidden">
@@ -39,12 +38,31 @@ const NavBar = () => {
           />
         </Link>
 
-        <Link
-          className="nav-links max-[446px]:hidden max-[990px]:hidden"
+        {user ? 
+          <Link
+          className="nav-links flex gap-1 max-[446px]:hidden max-[990px]:hidden"
           href={"/signup"}
         >
-          Sign Up
+          <Image 
+            src="/images/sign-out.svg"
+            alt="Sign Out"
+            width={20}
+            height={20}
+          />
+          <p>Sign Out</p>
         </Link>
+        :         <Link
+          className="nav-links flex gap-1 max-[446px]:hidden max-[990px]:hidden"
+          href={"/signup"}
+        >
+          <Image 
+            src="/images/sign-in.svg"
+            alt="Sign Up"
+            width={20}
+            height={20}
+          />
+          <p>Sign Up</p>
+        </Link>}
 
         <Link
           className="nav-links flex gap-1 max-[446px]:hidden max-[990px]:hidden"
