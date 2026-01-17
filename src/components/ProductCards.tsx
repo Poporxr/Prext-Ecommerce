@@ -148,7 +148,7 @@ const ProductCard = ({ products }: ProductsCardsprops) => {
                   onClick={() => decrement(product.id)}
                 />
 
-                <span className="min-w-[20px] text-center text-sm font-medium">
+                <span className="min-w-5 text-center text-sm font-medium">
                   {product.quantity}
                 </span>
 

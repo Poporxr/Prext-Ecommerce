@@ -5,6 +5,7 @@ import HamburgerMenu from "./HamburgerMenu";
 import { useAuth } from "@/lib/useAuth";
 import { auth } from "@/lib/firebase/firebase";
 import { Auth, signOut as firebaseSignOut } from "firebase/auth";
+import HamburgerMenuWrapper from "./HamburgerMenuWrapper";
 
 const NavBar = () => {
   const {user} = useAuth();
@@ -24,7 +25,7 @@ const NavBar = () => {
 
   return (
     <nav className="nav-bar w-[90%] fixed  left-0 right-0 p-1 z-50 mx-auto max-w-7xl max-[600px]:flex-col max-[600px]:gap-3 font-serif">
-      <div className="flex gap-1 bg-[#a8a5a5f1] max-w-400 items-center justify-center p-1.5 rounded-3xl max-[446px]:hidden max-[990px]:hidden">
+      <div className="flex gap-1 bg-[#a8a5a5f1]  max-w-400 items-center justify-center p-1.5 rounded-3xl max-[446px]:hidden max-[990px]:hidden">
         <Link className="nav-links flex gap-1" href={"/"}>
           <Image src="/images/home.svg" width={17} height={20} alt="Logo" />
           <p>Home</p>
@@ -41,17 +42,12 @@ const NavBar = () => {
         />
       </div>
 
-      <div className="flex gap-1 bg-[#a8a5a5f1] items-center justify-between p-1.5 rounded-3xl max-[446px]:rounded-4xl  max-[600px]:w-full max-[990px]:w-full max-[990px]:rounded-4xl">
-        <HamburgerMenu />
+      <div className="flex gap-1 items-center lg:bg-[#a8a5a5f1] lg:p-1.5 justify-between pt-0.5 rounded-3xl max-[446px]:rounded-4xl  max-[600px]:w-full max-[990px]:w-full max-[990px]:rounded-4xl">
 
-        <Link className="nav-links lg:hidden  " href={"/cart"}>
-          <Image
-            src="/images/cart-icon.svg"
-            alt="Cart"
-            width={30}
-            height={30}
-          />
-        </Link>
+        <Image className="sm:hidden lg:hidden" src={'/images/prext-logo.png'} width={120} height={80} alt="logo" />
+
+        <HamburgerMenuWrapper />
+
 
         {user ? 
           <Link
@@ -111,7 +107,5 @@ const NavBar = () => {
 };
 
 export default NavBar;
-function signOut(auth: Auth) {
-  throw new Error("Function not implemented.");
-}
+
 
