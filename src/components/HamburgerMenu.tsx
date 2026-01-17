@@ -42,6 +42,7 @@ export default function HamburgerMenu() {
 
   return (
     <Drawer.Root
+      id="hamburger-menu-drawer"
       open={open}
       onOpenChange={(e) => setOpen(e.open)}
       placement="start"
@@ -51,6 +52,7 @@ export default function HamburgerMenu() {
         <button
           className="flex lg:hidden p-2 rounded-full hover:bg-black/5 transition"
           aria-label="Toggle menu"
+          suppressHydrationWarning
         >
           <Image
             src="/images/hamburger.svg"
